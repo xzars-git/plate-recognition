@@ -31,85 +31,122 @@ class WebcamANPR:
         self.model = YOLO(plate_model_path)
         print("✅ Model loaded!")
         
-        # OCR (optional)
+        # OCR (optional) - LOAD SEKALI DI SINI
         self.use_ocr = use_ocr
+        self.ocr = None
         if use_ocr:
             try:
                 from paddleocr import PaddleOCR
                 print("\n📦 Loading PaddleOCR...")
-                self.ocr = PaddleOCR(use_angle_cls=True, lang='en', 
-                                    use_gpu=False, show_log=False)
+                # Minimal parameters for compatibility
+                self.ocr = PaddleOCR(lang='en', use_gpu=False, show_log=False)
                 print("✅ OCR loaded!")
             except ImportError:
                 print("⚠️  PaddleOCR not installed. OCR disabled.")
                 print("   Install with: pip install paddleocr paddlepaddle")
                 self.use_ocr = False
+                self.ocr = None
+            except Exception as e:
+                print(f"⚠️  PaddleOCR error: {e}")
+                print("   OCR disabled.")
+                self.use_ocr = False
+                self.ocr = None
         
         # Stats
         self.fps = 0
         self.frame_count = 0
         self.start_time = time.time()
         
+        # Optimization: resize target untuk inference
+        self.inference_size = 640  # YOLO input size
+        
+        # Skip frame untuk performa lebih baik
+        self.skip_frames = 2  # Process 1 dari setiap 3 frame (balance)
+        self.last_result = None  # Cache hasil terakhir
+        
     def read_plate_text(self, plate_img):
         """Read text from cropped plate using OCR"""
-        if not self.use_ocr or plate_img is None:
+        if not self.use_ocr or self.ocr is None or plate_img is None:
             return ""
         
         try:
-            result = self.ocr.ocr(plate_img, cls=True)
-            if result is None or len(result) == 0:
+            # Use new PaddleOCR API: predict() instead of ocr()
+            result = self.ocr.predict(plate_img)
+            
+            if not result or len(result) == 0:
                 return ""
             
-            texts = []
-            for line in result:
-                if line:
-                    for word_info in line:
-                        text = word_info[1][0]
-                        conf = word_info[1][1]
-                        if conf > 0.5:
-                            texts.append(text)
+            # Extract text from result
+            page_result = result[0]  # First page
+            if 'rec_texts' not in page_result:
+                return ""
             
-            full_text = ''.join(texts).replace(' ', '').upper()
+            # Join all detected texts
+            texts = page_result['rec_texts']
+            rec_scores = page_result.get('rec_scores', [1.0] * len(texts))
+            
+            # Filter by confidence
+            filtered_texts = []
+            for text, score in zip(texts, rec_scores):
+                if score > 0.5:
+                    filtered_texts.append(text)
+            
+            full_text = ''.join(filtered_texts).replace(' ', '').upper()
             return full_text
-        except:
+        except Exception as e:
             return ""
     
     def process_frame(self, frame):
-        """Process single frame"""
-        # Detect plates
-        results = self.model(frame, conf=0.25, verbose=False)
+        """Process single frame - OPTIMIZED (in-place drawing)"""
+        # Get original dimensions
+        h, w = frame.shape[:2]
         
-        # Draw results
-        annotated_frame = frame.copy()
+        # Resize untuk inference (lebih cepat)
+        scale = self.inference_size / max(h, w)
+        if scale < 1.0:  # Only resize if image is larger
+            new_w = int(w * scale)
+            new_h = int(h * scale)
+            inference_frame = cv2.resize(frame, (new_w, new_h))
+        else:
+            inference_frame = frame
+            scale = 1.0
         
+        # Detect plates (pada frame yang sudah di-resize)
+        results = self.model(inference_frame, conf=0.25, verbose=False)
+        
+        # Draw results LANGSUNG pada frame (in-place, no copy!)
         for result in results:
             boxes = result.boxes
             for box in boxes:
-                # Get bounding box
-                x1, y1, x2, y2 = map(int, box.xyxy[0])
+                # Get bounding box (scale kembali ke ukuran original)
+                x1, y1, x2, y2 = box.xyxy[0]
+                x1 = int(x1 / scale)
+                y1 = int(y1 / scale)
+                x2 = int(x2 / scale)
+                y2 = int(y2 / scale)
                 conf = float(box.conf[0])
                 
                 # Draw box
                 color = (0, 255, 0)  # Green
-                cv2.rectangle(annotated_frame, (x1, y1), (x2, y2), color, 2)
+                cv2.rectangle(frame, (x1, y1), (x2, y2), color, 2)
                 
                 # Label
                 label = f"Plate {conf:.2f}"
                 
-                # OCR (if enabled)
-                if self.use_ocr and x2 > x1 and y2 > y1:
+                # OCR (if enabled) - gunakan frame original untuk crop
+                if self.use_ocr and self.ocr is not None and x2 > x1 and y2 > y1:
                     plate_crop = frame[y1:y2, x1:x2]
                     text = self.read_plate_text(plate_crop)
                     if text:
                         label = f"{text} {conf:.2f}"
                 
                 # Draw label
-                (w, h), _ = cv2.getTextSize(label, cv2.FONT_HERSHEY_SIMPLEX, 0.6, 1)
-                cv2.rectangle(annotated_frame, (x1, y1-20), (x1+w, y1), color, -1)
-                cv2.putText(annotated_frame, label, (x1, y1-5),
+                (label_w, label_h), _ = cv2.getTextSize(label, cv2.FONT_HERSHEY_SIMPLEX, 0.6, 1)
+                cv2.rectangle(frame, (x1, y1-20), (x1+label_w, y1), color, -1)
+                cv2.putText(frame, label, (x1, y1-5),
                            cv2.FONT_HERSHEY_SIMPLEX, 0.6, (255, 255, 255), 2)
         
-        return annotated_frame
+        return frame  # Return reference, tidak bikin copy baru
     
     def run(self, camera_id=0):
         """
@@ -129,6 +166,9 @@ class WebcamANPR:
         cap.set(cv2.CAP_PROP_FRAME_WIDTH, 1280)
         cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 720)
         
+        # OPTIMIZATION: Limit webcam FPS untuk reduce overhead
+        cap.set(cv2.CAP_PROP_FPS, 30)  # Max 30 FPS dari webcam
+        
         print("\n" + "="*60)
         print("✅ Camera opened successfully!")
         print("="*60)
@@ -136,11 +176,14 @@ class WebcamANPR:
         print("  'q' - Quit")
         print("  's' - Save screenshot")
         print("  'o' - Toggle OCR (if available)")
+        print("  '+' - Increase quality (slower)")
+        print("  '-' - Decrease quality (faster)")
         print("\nPress any key in the window to start...")
         print("="*60)
         
         self.start_time = time.time()
         self.frame_count = 0
+        frame_counter = 0  # Untuk skip frames
         
         while True:
             ret, frame = cap.read()
@@ -148,49 +191,69 @@ class WebcamANPR:
                 print("❌ Cannot read frame!")
                 break
             
-            # Process frame
-            processed_frame = self.process_frame(frame)
+            self.frame_count += 1
+            
+            # Skip frames untuk performa (process setiap N frame)
+            should_process = (frame_counter % (self.skip_frames + 1) == 0)
+            
+            if should_process:
+                # Process frame (in-place)
+                self.process_frame(frame)
+                self.last_result = frame
+            
+            frame_counter += 1
             
             # Calculate FPS
-            self.frame_count += 1
-            elapsed_time = time.time() - self.start_time
-            if elapsed_time > 0:
-                self.fps = self.frame_count / elapsed_time
+            elapsed = time.time() - self.start_time
+            if elapsed > 0:
+                self.fps = self.frame_count / elapsed
             
-            # Draw FPS
-            fps_text = f"FPS: {self.fps:.1f}"
-            cv2.putText(processed_frame, fps_text, (10, 30),
-                       cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
+            # Always display untuk smooth FPS
+            display_frame = self.last_result if self.last_result is not None else frame
             
-            # Draw OCR status
-            if self.use_ocr:
-                cv2.putText(processed_frame, "OCR: ON", (10, 60),
+            # Draw overlay
+            cv2.putText(display_frame, f"FPS: {self.fps:.1f}", (10, 30),
+                       cv2.FONT_HERSHEY_SIMPLEX, 1.0, (0, 255, 0), 2)
+            
+            cv2.putText(display_frame, f"Skip: {self.skip_frames}", (10, 70),
+                       cv2.FONT_HERSHEY_SIMPLEX, 0.6, (255, 255, 255), 2)
+            
+            if self.use_ocr and self.ocr is not None:
+                cv2.putText(display_frame, "OCR: ON", (10, 100),
                            cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 255, 0), 2)
             
             # Show frame
-            cv2.imshow('ANPR - Webcam Detection', processed_frame)
+            cv2.imshow('ANPR - Webcam Detection', display_frame)
             
-            # Handle keyboard
+            # Handle keyboard (polling setiap frame)
             key = cv2.waitKey(1) & 0xFF
             
             if key == ord('q'):
                 print("\n🛑 Stopping...")
                 break
             elif key == ord('s'):
+                save_frame = self.last_result if self.last_result is not None else frame
                 filename = f"screenshot_{int(time.time())}.jpg"
-                cv2.imwrite(filename, processed_frame)
+                cv2.imwrite(filename, save_frame)
                 print(f"📸 Screenshot saved: {filename}")
             elif key == ord('o'):
-                if self.use_ocr:
-                    self.use_ocr = False
-                    print("OCR: OFF")
+                # Toggle OCR on/off (TIDAK perlu reload model)
+                if self.ocr is not None:
+                    self.use_ocr = not self.use_ocr
+                    status = "ON" if self.use_ocr else "OFF"
+                    print(f"OCR: {status}")
                 else:
-                    try:
-                        from paddleocr import PaddleOCR
-                        self.use_ocr = True
-                        print("OCR: ON")
-                    except:
-                        print("⚠️  OCR not available")
+                    print("⚠️  OCR not loaded. Cannot toggle.")
+            elif key == ord('+') or key == ord('='):
+                # Increase quality (lebih lambat)
+                if self.skip_frames > 0:
+                    self.skip_frames -= 1
+                    print(f"Skip frames: {self.skip_frames} (higher quality)")
+            elif key == ord('-'):
+                # Decrease quality (lebih cepat)
+                if self.skip_frames < 5:
+                    self.skip_frames += 1
+                    print(f"Skip frames: {self.skip_frames} (higher speed)")
         
         # Cleanup
         cap.release()
