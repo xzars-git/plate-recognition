@@ -1,0 +1,10 @@
+# Plate Detection Dataset (YOLO Format)
+# Converted from COCO format
+
+path: D:\Kerja\anpr-jabar\dataset\plate_detection_yolo
+train: images/train
+val: images/val
+
+# Class information
+nc: 1
+names: ['license_plate']
