@@ -21,7 +21,7 @@ def main():
     # Training
     results = model.train(
         data='dataset/plate_detection_yolo/plate_detection.yaml',
-        epochs=1,                   # Full training: 150 epochs
+        epochs=150,                   # Full training: 150 epochs
         imgsz=640,
         batch=8,                      # Batch size 8 (baik untuk RAM)
         device=device,
