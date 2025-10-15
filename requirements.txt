@@ -1,0 +1,31 @@
+# Dependencies untuk YOLOv11 - Deteksi Plat Nomor
+
+# Core dependencies
+ultralytics>=8.3.0      # YOLOv11 (versi terbaru)
+opencv-python>=4.8.0    # Computer vision
+torch>=2.0.0            # PyTorch (deep learning framework)
+torchvision>=0.15.0     # PyTorch vision utilities
+numpy>=1.24.0           # Numerical computing
+Pillow>=10.0.0          # Image processing
+matplotlib>=3.7.0       # Plotting dan visualisasi
+scipy>=1.10.0           # Scientific computing
+
+# OCR untuk Character Recognition (Stage 2)
+paddlepaddle>=2.5.0     # PaddlePaddle framework
+paddleocr>=2.7.0        # PaddleOCR untuk text recognition
+easyocr>=1.7.0          # Alternatif OCR engine
+
+# Optional (untuk monitoring & logging)
+tensorboard>=2.13.0     # TensorBoard untuk monitoring training
+wandb                   # Weights & Biases (cloud monitoring)
+comet-ml                # Comet ML (cloud monitoring)
+
+# Optional (untuk deployment)
+onnx>=1.14.0           # ONNX export
+onnxruntime>=1.15.0    # ONNX runtime
+openvino-dev           # Intel OpenVINO
+
+# Development tools
+pandas>=2.0.0          # Data manipulation
+seaborn>=0.12.0        # Statistical visualization
+tqdm>=4.65.0           # Progress bars
