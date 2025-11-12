@@ -1,48 +1,71 @@
-# 🚗 ANPR Jawa Barat - Automatic Number Plate Recognition
+# 🚗 ANPR System - Automatic Number Plate Recognition
 
 ![Status](https://img.shields.io/badge/status-production%20ready-brightgreen)
-![Python](https://img.shields.io/badge/python-3.10-blue)
+![Python](https://img.shields.io/badge/python-3.10+-blue)
 ![YOLOv11](https://img.shields.io/badge/YOLOv11-latest-orange)
 
-Sistem **Automatic Number Plate Recognition (ANPR)** lengkap untuk plat nomor kendaraan Jawa Barat menggunakan **YOLOv11** + **PaddleOCR**.
+Sistem **Automatic Number Plate Recognition (ANPR)** dengan fitur **automatic rotation correction** untuk mendeteksi plat nomor yang dirotasi (90°/180°/270°).
 
-## ✅ Project Status: COMPLETE!
+## ✨ Features
 
-- ✅ **Stage 1**: YOLOv11 plate detection (mAP50 = 87.47%)
-- ✅ **Stage 2**: PaddleOCR text recognition
-- ✅ **Real-time**: Webcam support (18 FPS)
-- ✅ **Production Ready**: Tested and documented
+- ✅ **YOLOv11 Plate Detection** - Deteksi lokasi plat nomor (mAP50 = 87.47%)
+- ✅ **PaddleOCR Text Recognition** - Pembacaan teks plat nomor
+- ✅ **Rotation Auto-Correction** - Handle plat yang dirotasi 90°/180°/270° ⭐ NEW!
+- ✅ **Real-time Webcam** - Support webcam dengan 18 FPS (CPU) / 60+ FPS (GPU)
+- ✅ **Production Ready** - Tested dan documented
 
 ---
 
-## 🎯 2-Stage Pipeline:
+## 🎯 Pipeline
 
-1. **Stage 1**: Deteksi lokasi plat nomor (YOLOv11) → **TRAINED ✅**
-2. **Stage 2**: Pembacaan karakter/teks plat (PaddleOCR) → **INTEGRATED ✅**
+1. **Preprocessing**: Auto-detect dan koreksi rotasi gambar ⭐ NEW!
+2. **Detection**: Deteksi lokasi plat nomor (YOLOv11)
+3. **Recognition**: Pembacaan teks plat (PaddleOCR)
 
 ---
 
 ## 🚀 Quick Start
 
-### Run Webcam (Real-time Detection)
+### 1. Install Dependencies
 
-```bash
-python test_webcam.py
+```powershell
+# Buat virtual environment (recommended)
+python -m venv venv
+.\venv\Scripts\Activate.ps1
+
+# Install packages
+pip install -r requirements.txt
 ```
 
-**Controls**: `'o'` toggle OCR | `'s'` screenshot | `'q'` quit
+### 2. Test Detection (Normal)
 
-### Test on Images
-
-```bash
-python test_images.py --source path/to/images
+```powershell
+python test_images.py --source path/to/image.jpg
 ```
 
-### Complete ANPR Pipeline
+### 3. Test Detection (With Rotation Auto-Correction) ⭐ NEW!
 
-```bash
-python test_complete_anpr.py
+```powershell
+python test_images_with_rotation.py --source path/to/image.jpg --debug
 ```
+
+### 4. Test Rotation Correction Only
+
+```powershell
+# Single image
+python plate_rotation_detector.py image.jpg --debug
+
+# Batch process folder
+python plate_rotation_detector.py folder/ --folder --output corrected/
+```
+
+### 5. Webcam Real-time
+
+```powershell
+python fast_webcam_anpr.py
+```
+
+**Controls**: `O` - Toggle OCR | `S` - Screenshot | `Q` - Quit
 
 ---
 
@@ -59,31 +82,38 @@ python test_complete_anpr.py
 **Training**: 150 epochs (~6-7 hours CPU / ~30 mins GPU)  
 **Dataset**: 1,099 train + 276 val images
 
-## 📁 Struktur Dataset
+## 📁 Project Structure
 
 ```
-anpr-jabar/
-├── dataset/
-│   ├── plate_detection_dataset/      # Stage 1: Plate Detection
-│   │   ├── annotations/
-│   │   │   └── annotations.json      # COCO format
-│   │   └── images/
-│   ├── plate_text_dataset/           # Stage 2: Character Recognition
-│   │   ├── label.csv                 # Text labels
-│   │   └── dataset/                  # Cropped plate images
-│   └── plate_detection_yolo/         # Converted YOLO format (auto-generated)
-├── convert_coco_to_yolo.py           # Konversi COCO → YOLO
-├── train_plate_detection.py          # Training Stage 1
-├── train_char_recognition.py         # Info Stage 2
-├── detect_anpr_complete.py           # Complete ANPR pipeline
-└── README.md
+plate-recognition/
+├── best.pt                           # Trained YOLOv11 model
+├── plate_rotation_detector.py        # Rotation detection & correction
+├── test_images_with_rotation.py      # Inference with rotation (MAIN)
+├── test_images.py                    # Simple inference (no rotation)
+├── fast_webcam_anpr.py               # Real-time webcam detection
+├── train_plate_detection.py          # Training script
+├── plat_jabar.yaml                   # Dataset configuration
+├── requirements.txt                  # Python dependencies
+├── README.md                         # Documentation
+└── dataset/
+    └── plate_detection_yolo/         # YOLO format dataset
+        ├── images/
+        │   ├── train/
+        │   └── val/
+        └── labels/
+            ├── train/
+            └── val/
 ```
 
-## 🔧 Instalasi
+## 🔧 Installation
 
-### 1. Install Python (3.8 atau lebih baru)
+### 1. Clone Repository
 
-### 2. Activate Virtual Environment (Recommended)
+```powershell
+cd your/project/folder
+```
+
+### 2. Create Virtual Environment (Recommended)
 
 ```powershell
 python -m venv venv
@@ -93,192 +123,115 @@ python -m venv venv
 ### 3. Install Dependencies
 
 ```powershell
-pip install ultralytics opencv-python paddlepaddle paddleocr
-```
-
-Atau install semua sekaligus:
-
-```powershell
 pip install -r requirements.txt
 ```
 
-### 4. Cek Instalasi
+### 4. Verify Installation
 
 ```powershell
-python -c "from ultralytics import YOLO; from paddleocr import PaddleOCR; print('✅ All packages installed!')"
+python -c "from ultralytics import YOLO; import cv2; print('✅ All packages ready!')"
 ```
 
-## 🎯 Cara Menggunakan
+## 🎯 Usage
 
-### Step 1: Konversi Dataset COCO ke YOLO
-
-Dataset plate detection dalam format COCO, perlu dikonversi ke YOLO:
+### 1. Test on Images (With Rotation Correction)
 
 ```powershell
-python convert_coco_to_yolo.py
+# Test single image
+python test_images_with_rotation.py --source test_image.jpg
+
+# Test folder
+python test_images_with_rotation.py --source test_folder/
+
+# With debug info
+python test_images_with_rotation.py --source image.jpg --debug
 ```
 
-Output: `dataset/plate_detection_yolo/` dengan struktur YOLO format
-
-### Step 2: Training Stage 1 - Plate Detection
-
-Train model YOLOv11 untuk mendeteksi lokasi plat nomor:
-
-**For CPU (Windows stability):**
+### 2. Test on Images (Simple, No Rotation)
 
 ```powershell
+python test_images.py --source test_image.jpg
+```
+
+### 3. Rotation Correction Only
+
+```powershell
+# Single image
+python plate_rotation_detector.py image.jpg --debug
+
+# Batch process folder
+python plate_rotation_detector.py input_folder/ --folder --output corrected/
+```
+
+### 4. Real-time Webcam
+
+```powershell
+python fast_webcam_anpr.py
+```
+
+**Webcam Controls:**
+- `O` - Toggle OCR
+- `S` - Save screenshot
+- `Q` - Quit
+
+### 5. Training (Optional)
+
+```powershell
+# Train new model or fine-tune
 python train_plate_detection.py
 ```
 
-**For GPU (RTX 3080 Ti optimized):**
+## 🎨 Programmatic Usage
 
-```powershell
-# Install PyTorch CUDA first (one-time)
-python install_pytorch_cuda.py
-
-# Then train
-python train_plate_detection_gpu.py
-```
-
-**Model yang digunakan:**
-
-- `yolo11n.pt` - Nano (tercepat)
-- `yolo11s.pt` - Small
-- `yolo11m.pt` - Medium (RECOMMENDED)
-- `yolo11l.pt` - Large
-- `yolo11x.pt` - XLarge (akurasi tertinggi)
-
-Model terbaik akan disimpan di: `runs/plate_detection/yolov11_stage1/weights/best.pt`
-
-### Step 3: Evaluate Model Performance
-
-Check mAP, precision, recall setelah training:
-
-```powershell
-python evaluate_model.py
-```
-
-Target: mAP50 >= 0.85
-
-### Step 4: Test with Images
-
-Test model pada gambar:
-
-```powershell
-# Test on validation set
-python test_images.py
-
-# Test on specific image/folder
-python test_images.py --source path/to/image.jpg
-python test_images.py --source path/to/folder/
-```
-
-### Step 5: Test with Webcam
-
-Real-time detection dengan webcam:
-
-```powershell
-python test_webcam.py
-```
-
-**Keyboard controls:**
-
-- `Q` - Quit
-- `S` - Save screenshot
-- `O` - Toggle OCR (if PaddleOCR installed)
-
-### Step 6: Complete ANPR Pipeline (Stage 1 + 2)
-
-Gunakan complete pipeline (Stage 1 + Stage 2):
-
-```powershell
-python detect_anpr_complete.py
-```
-
-System akan:
-
-1. ✅ Detect lokasi plat nomor dengan YOLOv11
-2. ✅ Crop region plat nomor
-3. ✅ Read teks dengan PaddleOCR
-4. ✅ Tampilkan hasil dengan bounding box + teks
-
-## 📊 Monitoring Training
-
-Ultralytics menyediakan monitoring otomatis:
-
-1. **TensorBoard** (lokal):
-
-```bash
-tensorboard --logdir runs/detect
-```
-
-2. **Weights & Biases** (cloud) - Tambahkan di `train_yolov11.py`:
-
-```python
-results = model.train(
-    ...
-    project='wandb',  # Enable W&B logging
-)
-```
-
-3. **Comet ML** - Tambahkan di `train_yolov11.py`:
-
-```python
-results = model.train(
-    ...
-    project='comet',  # Enable Comet logging
-)
-```
-
-## 🎨 Contoh Penggunaan Programmatic
-
-### Training
+### Basic Usage
 
 ```python
 from ultralytics import YOLO
+from plate_rotation_detector import PlateRotationDetector
+import cv2
 
-model = YOLO('yolo11n.pt')
-results = model.train(data='plat_jabar.yaml', epochs=100, imgsz=640)
-```
+# Load model and detector
+model = YOLO('best.pt')
+detector = PlateRotationDetector()
 
-### Inference
+# Read image
+image = cv2.imread('test.jpg')
 
-```python
-from ultralytics import YOLO
+# Step 1: Correct rotation
+corrected, angle, confidence = detector.preprocess(image)
+print(f"Rotation: {angle}° (confidence: {confidence:.2f})")
 
-model = YOLO('runs/detect/plat_jabar_yolov11/weights/best.pt')
-results = model('path/to/image.jpg')
+# Step 2: Detect plates
+results = model.predict(corrected, conf=0.25)
 
-# Akses hasil
+# Step 3: Process results
 for result in results:
-    boxes = result.boxes  # Bounding boxes
+    boxes = result.boxes
     for box in boxes:
-        print(f"Class: {box.cls}, Confidence: {box.conf}, BBox: {box.xyxy}")
+        x1, y1, x2, y2 = map(int, box.xyxy[0])
+        conf = float(box.conf[0])
+        print(f"Plate at ({x1}, {y1}, {x2}, {y2}) - confidence: {conf:.2f}")
 ```
 
-### Batch Prediction
+### Batch Processing
 
 ```python
-from ultralytics import YOLO
 from pathlib import Path
 
-model = YOLO('runs/detect/plat_jabar_yolov11/weights/best.pt')
-
-# Proses semua gambar di folder
+# Process all images in folder
 image_folder = Path('test_images/')
 for img_path in image_folder.glob('*.jpg'):
-    results = model(img_path, save=True)
-```
-
-## ⚙️ Hyperparameter Tuning
-
-Untuk hasil optimal, gunakan hyperparameter tuning:
-
-```python
-from ultralytics import YOLO
-
-model = YOLO('yolo11n.pt')
-model.tune(data='plat_jabar.yaml', epochs=30, iterations=300)
+    # Correct rotation
+    image = cv2.imread(str(img_path))
+    corrected, angle, conf = detector.preprocess(image)
+    
+    # Detect
+    results = model.predict(corrected, conf=0.25)
+    
+    # Save result
+    if len(results[0].boxes) > 0:
+        annotated = results[0].plot()
+        cv2.imwrite(f'output/{img_path.name}', annotated)
 ```
 
 ## 🐛 Troubleshooting
