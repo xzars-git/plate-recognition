@@ -46,22 +46,29 @@ weights/
 *.weights
 checkpoints/
 
-# Dataset (Large files - comment out if you want to track dataset)
-dataset/plate_detection_dataset/images/
-dataset/plate_detection_yolo/images/
-dataset/plate_text_dataset/dataset/
+# Dataset (Large files - will NOT be pushed to Git)
+dataset/
+dataset/*
+dataset/**/*
+
+# Image files (exclude all images)
 *.jpg
 *.jpeg
 *.png
 *.gif
 *.bmp
 *.tiff
+*.webp
+
+# Video files
 *.mp4
 *.avi
 *.mov
-# Allow keeping sample images if needed
-!sample_*.jpg
-!sample_*.png
+*.mkv
+
+# Allow keeping specific sample images if needed (optional)
+# !sample_*.jpg
+# !sample_*.png
 
 # Logs & Results
 *.log
