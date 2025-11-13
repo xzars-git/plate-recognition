@@ -30,9 +30,7 @@ env/
 .venv
 
 # PyTorch & Models
-*.pt
 *.pth
-*.onnx
 *.engine
 *.tflite
 *.pb
@@ -89,7 +87,6 @@ results/
 
 # Jupyter Notebook
 .ipynb_checkpoints
-*.ipynb
 
 # Environment variables
 .env
