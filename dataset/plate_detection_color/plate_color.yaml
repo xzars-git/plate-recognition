@@ -1,0 +1,17 @@
+# Plate Detection with Color Dataset
+# YOLOv11 Configuration for Native Rotation Training
+
+# Dataset paths (absolute path)
+path: D:\Bapenda New\explore\plate-recognition\dataset\plate_detection_color
+train: train/images  # Train images
+val: train/images    # Use same as train since val is empty (will auto-split)
+
+# Classes (hanya 1 class: plate)
+names:
+  0: plate
+
+# Number of classes
+nc: 1
+
+# Training hyperparameters for quick test
+# Will be overridden by train script
