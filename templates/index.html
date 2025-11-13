@@ -1,0 +1,692 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🎯 Plate Detection Demo - Epoch 170</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 30px;
+        }
+        
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+        
+        .header p {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+        
+        .main-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+        
+        .card {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 30px 80px rgba(0,0,0,0.4);
+        }
+        
+        .card h2 {
+            color: #667eea;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .upload-box {
+            border: 3px dashed #667eea;
+            border-radius: 10px;
+            padding: 40px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: #f8f9ff;
+        }
+        
+        .upload-box:hover {
+            border-color: #764ba2;
+            background: #f0f1ff;
+        }
+        
+        .upload-box input[type="file"] {
+            display: none;
+        }
+        
+        .upload-icon {
+            font-size: 3em;
+            margin-bottom: 10px;
+        }
+        
+        .btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1em;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            margin-top: 10px;
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.4);
+        }
+        
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            margin-top: 20px;
+        }
+        
+        .stat-item {
+            background: #f8f9ff;
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 4px solid #667eea;
+        }
+        
+        .stat-label {
+            color: #666;
+            font-size: 0.9em;
+            margin-bottom: 5px;
+        }
+        
+        .stat-value {
+            color: #667eea;
+            font-size: 1.5em;
+            font-weight: bold;
+        }
+        
+        .results {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            display: none;
+        }
+        
+        .results.active {
+            display: block;
+        }
+        
+        .results h3 {
+            color: #667eea;
+            margin-bottom: 20px;
+        }
+        
+        .result-image {
+            max-width: 100%;
+            border-radius: 10px;
+            margin: 20px 0;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+        
+        .detection-box {
+            background: #f8f9ff;
+            border-left: 4px solid #764ba2;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 8px;
+        }
+        
+        .detection-box strong {
+            color: #667eea;
+        }
+        
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 30px;
+        }
+        
+        .loading.active {
+            display: block;
+        }
+        
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .badge {
+            display: inline-block;
+            background: #667eea;
+            color: white;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.85em;
+            margin: 5px 5px 5px 0;
+        }
+        
+        .badge.success {
+            background: #10b981;
+        }
+        
+        .badge.warning {
+            background: #f59e0b;
+        }
+        
+        .badge-status {
+            display: inline-block;
+            background: #10b981;
+            color: white;
+            padding: 8px 16px;
+            border-radius: 20px;
+            margin-top: 10px;
+            font-weight: 600;
+        }
+        
+        .upload-box.dragover {
+            border-color: #764ba2;
+            background: #e8e9f8;
+        }
+        
+        .btn-secondary {
+            background: #6b7280;
+        }
+        
+        .btn-secondary:hover {
+            box-shadow: 0 10px 25px rgba(107, 114, 128, 0.4);
+        }
+        
+        .btn {
+            width: 100%;
+        }
+        
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #e5e7eb;
+        }
+        
+        .tab-btn {
+            background: none;
+            border: none;
+            padding: 12px 24px;
+            cursor: pointer;
+            font-weight: 600;
+            color: #666;
+            border-bottom: 3px solid transparent;
+            transition: all 0.3s ease;
+        }
+        
+        .tab-btn.active {
+            color: #667eea;
+            border-bottom-color: #667eea;
+        }
+        
+        .tab-content {
+            display: none;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
+        .history-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        
+        .history-table th {
+            background: #667eea;
+            color: white;
+            padding: 12px;
+            text-align: left;
+        }
+        
+        .history-table td {
+            border-bottom: 1px solid #e5e7eb;
+            padding: 12px;
+        }
+        
+        .history-table tr:hover {
+            background: #f9fafb;
+        }
+        
+        .info-panel {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .info-panel h4 {
+            margin-bottom: 10px;
+        }
+        
+        .info-panel ul {
+            list-style: none;
+            padding-left: 0;
+        }
+        
+        .info-panel li {
+            padding: 5px 0;
+        }
+        
+        .info-panel li:before {
+            content: "✓ ";
+            font-weight: bold;
+            margin-right: 8px;
+        }
+        
+        @media (max-width: 768px) {
+            .main-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .header h1 {
+                font-size: 1.8em;
+            }
+            
+            .tabs {
+                flex-wrap: wrap;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎯 Plate Detection Demo</h1>
+            <p>YOLOv11n Epoch 170 - Production Ready</p>
+            <p style="font-size: 0.95em; margin-top: 10px;">
+                Precision: 81.64% | mAP50: 49.14% | Speed: 1.30ms
+            </p>
+            <div class="badge-status">✓ Model Ready</div>
+        </div>
+        
+        <div class="main-grid">
+            <!-- Upload Section -->
+            <div class="card">
+                <h2>📸 Upload Image</h2>
+                
+                <div class="upload-box" id="uploadBox" onclick="document.getElementById('imageInput').click()">
+                    <div class="upload-icon">📤</div>
+                    <p><strong>Click to upload</strong> or drag and drop</p>
+                    <p style="color: #999; font-size: 0.9em;">JPG, PNG up to 50MB</p>
+                    <input type="file" id="imageInput" accept="image/*" onchange="handleUpload(event)">
+                </div>
+                
+                <button class="btn" onclick="detectImage()">🔍 Detect Plates</button>
+                
+                <div style="margin-top: 20px; padding-top: 20px; border-top: 2px solid #e5e7eb;">
+                    <h4 style="color: #667eea; margin-bottom: 10px;">Sample Commands</h4>
+                    <p style="font-size: 0.9em; color: #666;">
+                        <strong>CLI Testing:</strong><br>
+                        <code>python demo_app.py</code><br><br>
+                        <strong>Quick Validation:</strong><br>
+                        <code>python quick_test.py</code>
+                    </p>
+                </div>
+            </div>
+            
+            <!-- Info Section -->
+            <div class="card">
+                <h2>ℹ️ Model Information</h2>
+                
+                <div class="info-panel">
+                    <h4>Model Details</h4>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 15px;">
+                        <div>
+                            <strong>Model:</strong> YOLOv11n<br>
+                            <strong>Training:</strong> Epoch 170<br>
+                            <strong>Precision:</strong> 81.64%
+                        </div>
+                        <div>
+                            <strong>mAP50:</strong> 49.14%<br>
+                            <strong>Speed:</strong> 1.30ms<br>
+                            <strong>Size:</strong> 16.08 MB
+                        </div>
+                    </div>
+                </div>
+                
+                <div style="margin-top: 20px;">
+                    <strong style="color: #667eea;">Features:</strong>
+                    <div style="margin-top: 10px;">
+                        <div class="badge success">✓ Rotation Detection</div>
+                        <div class="badge success">✓ Real-time</div>
+                        <div class="badge success">✓ Multi-plate</div>
+                        <div class="badge success">✓ Batch Processing</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Statistics -->
+        <div class="card" style="margin-bottom: 30px;">
+            <h2>📊 Statistics</h2>
+            
+            <div class="stats">
+                <div class="stat-item">
+                    <div class="stat-label">Images Processed</div>
+                    <div class="stat-value" id="statProcessed">0</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-label">Total Detections</div>
+                    <div class="stat-value" id="statDetections">0</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-label">Avg Confidence</div>
+                    <div class="stat-value" id="statConfidence">0%</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-label">Avg Time</div>
+                    <div class="stat-value" id="statTime">0ms</div>
+                </div>
+            </div>
+            
+            <button class="btn btn-secondary" onclick="resetStats()" style="width: auto; margin-top: 20px;">🔄 Reset Stats</button>
+        </div>
+        
+        <!-- Results -->
+        <div class="results" id="resultsSection">
+            <h3>🎯 Detection Results</h3>
+            
+            <div class="tabs">
+                <button class="tab-btn active" onclick="switchTab(event, 'detection')">🎯 Detection</button>
+                <button class="tab-btn" onclick="switchTab(event, 'history')">📋 History</button>
+            </div>
+            
+            <!-- Detection Tab -->
+            <div id="detection" class="tab-content active">
+                <div class="loading" id="loadingSpinner">
+                    <div class="spinner"></div>
+                    <p>Processing image...</p>
+                </div>
+                
+                <div id="resultContent" style="display: none;">
+                    <img id="resultImage" class="result-image" alt="Detection result">
+                    
+                    <div style="margin: 20px 0;">
+                        <h4 style="color: #667eea;">📍 Detected Plates</h4>
+                        <div id="detectionsList"></div>
+                    </div>
+                    
+                    <div style="margin: 20px 0;">
+                        <h4 style="color: #667eea;">📈 Detection Stats</h4>
+                        <div class="stats">
+                            <div class="stat-item">
+                                <div class="stat-label">Total Detections</div>
+                                <div class="stat-value" id="resultCount">0</div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-label">Rotation Angle</div>
+                                <div class="stat-value" id="resultRotation">0°</div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-label">Rotation Confidence</div>
+                                <div class="stat-value" id="resultRotConf">0%</div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-label">Processing Time</div>
+                                <div class="stat-value" id="resultTime">0ms</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- History Tab -->
+            <div id="history" class="tab-content">
+                <div style="max-height: 400px; overflow-y: auto;">
+                    <table class="history-table">
+                        <thead>
+                            <tr>
+                                <th>Timestamp</th>
+                                <th>Filename</th>
+                                <th>Detections</th>
+                                <th>Confidence</th>
+                                <th>Rotation</th>
+                                <th>Time</th>
+                            </tr>
+                        </thead>
+                        <tbody id="historyBody">
+                            <tr>
+                                <td colspan="6" style="text-align: center; color: #999;">No history yet</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        let uploadedImage = null;
+        
+        // Drag and drop
+        const uploadBox = document.getElementById('uploadBox');
+        uploadBox.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadBox.classList.add('dragover');
+        });
+        uploadBox.addEventListener('dragleave', () => {
+            uploadBox.classList.remove('dragover');
+        });
+        uploadBox.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadBox.classList.remove('dragover');
+            const files = e.dataTransfer.files;
+            if (files.length > 0) {
+                document.getElementById('imageInput').files = files;
+                handleUpload({ target: { files: files } });
+            }
+        });
+        
+        function handleUpload(event) {
+            const file = event.target.files[0];
+            if (file) {
+                uploadedImage = file;
+                console.log('Image selected:', file.name);
+                alert(`Image selected: ${file.name}`);
+            }
+        }
+        
+        async function detectImage() {
+            if (!uploadedImage) {
+                alert('Please select an image first!');
+                return;
+            }
+            
+            const formData = new FormData();
+            formData.append('image', uploadedImage);
+            
+            const resultsSection = document.getElementById('resultsSection');
+            const loadingSpinner = document.getElementById('loadingSpinner');
+            const resultContent = document.getElementById('resultContent');
+            
+            resultsSection.classList.add('active');
+            loadingSpinner.classList.add('active');
+            resultContent.style.display = 'none';
+            
+            try {
+                const response = await fetch('/api/detect', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    displayResults(data);
+                    updateStats();
+                    updateHistory();
+                } else {
+                    alert('Error: ' + data.error);
+                }
+            } catch (error) {
+                alert('Error: ' + error.message);
+            } finally {
+                loadingSpinner.classList.remove('active');
+                resultContent.style.display = 'block';
+            }
+        }
+        
+        function displayResults(data) {
+            // Display annotated image
+            document.getElementById('resultImage').src = data.annotated_image;
+            
+            // Display detection count
+            document.getElementById('resultCount').textContent = data.stats.count;
+            document.getElementById('resultRotation').textContent = data.stats.rotation_angle + '°';
+            document.getElementById('resultRotConf').textContent = data.stats.rotation_confidence;
+            document.getElementById('resultTime').textContent = data.stats.processing_time;
+            
+            // Display detections
+            const detectionsList = document.getElementById('detectionsList');
+            detectionsList.innerHTML = '';
+            
+            if (data.detections.length === 0) {
+                detectionsList.innerHTML = '<p style="color: #999;">No plates detected</p>';
+                return;
+            }
+            
+            data.detections.forEach((det, i) => {
+                const box = document.createElement('div');
+                box.className = 'detection-box';
+                box.innerHTML = `
+                    <strong>Plate ${i + 1}</strong>
+                    Confidence: ${det.confidence}<br>
+                    Position: (${det.x1.toFixed(0)}, ${det.y1.toFixed(0)})<br>
+                    Size: ${det.width.toFixed(0)} × ${det.height.toFixed(0)} px
+                `;
+                detectionsList.appendChild(box);
+            });
+        }
+        
+        async function updateStats() {
+            try {
+                const response = await fetch('/api/stats');
+                const data = await response.json();
+                
+                document.getElementById('statProcessed').textContent = data.total_processed;
+                document.getElementById('statDetections').textContent = data.total_detections;
+                document.getElementById('statConfidence').textContent = data.avg_confidence;
+                document.getElementById('statTime').textContent = data.avg_time;
+            } catch (error) {
+                console.error('Error updating stats:', error);
+            }
+        }
+        
+        async function updateHistory() {
+            try {
+                const response = await fetch('/api/history');
+                const data = await response.json();
+                
+                const tbody = document.getElementById('historyBody');
+                if (data.history.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; color: #999;">No history yet</td></tr>';
+                    return;
+                }
+                
+                tbody.innerHTML = data.history.map(entry => `
+                    <tr>
+                        <td>${entry.timestamp}</td>
+                        <td>${entry.filename}</td>
+                        <td>${entry.detections}</td>
+                        <td>${entry.confidence}</td>
+                        <td>${entry.rotation}°</td>
+                        <td>${entry.time}</td>
+                    </tr>
+                `).reverse().join('');
+            } catch (error) {
+                console.error('Error updating history:', error);
+            }
+        }
+        
+        async function resetStats() {
+            if (!confirm('Reset all statistics?')) return;
+            
+            try {
+                await fetch('/api/reset', { method: 'POST' });
+                updateStats();
+                updateHistory();
+                alert('Statistics reset!');
+            } catch (error) {
+                alert('Error: ' + error.message);
+            }
+        }
+        
+        function switchTab(event, tabName) {
+            // Hide all tabs
+            document.querySelectorAll('.tab-content').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            // Remove active class from all buttons
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            
+            // Show selected tab
+            document.getElementById(tabName).classList.add('active');
+            event.target.classList.add('active');
+        }
+        
+        // Update stats on page load
+        updateStats();
+        updateHistory();
+        
+        // Update stats every 5 seconds
+        setInterval(updateStats, 5000);
+    </script>
+</body>
+</html>
