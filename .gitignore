@@ -45,9 +45,9 @@ weights/
 checkpoints/
 
 # Dataset (Large files - will NOT be pushed to Git)
-# dataset/
-# dataset/*
-# dataset/**/*
+dataset/
+dataset/*
+dataset/**/*
 
 # Image files (exclude all images)
 *.jpg
