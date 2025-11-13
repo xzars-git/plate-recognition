@@ -39,10 +39,10 @@ class ModernLabelingTool:
         
         # Dataset destinations
         self.destinations = {
+            'Plate Detection (Color) - Train': 'dataset/plate_detection_color/train',
+            'Plate Detection (Color) - Val': 'dataset/plate_detection_color/val',
             'Plate Detection YOLO - Train': 'dataset/plate_detection_yolo/train',
             'Plate Detection YOLO - Val': 'dataset/plate_detection_yolo/val',
-            'Plate Detection Augmented - Train': 'dataset/plate_detection_augmented/train',
-            'Plate Detection Augmented - Val': 'dataset/plate_detection_augmented/val',
             'Custom Path...': None
         }
         
@@ -97,6 +97,29 @@ class ModernLabelingTool:
         )
         dest_combo.pack(side='left', padx=5)
         dest_combo.bind('<<ComboboxSelected>>', self.on_destination_change)
+        
+        # Plate color selector
+        tk.Label(
+            dest_frame,
+            text="🎨 Warna Plat:",
+            font=('Segoe UI', 10),
+            bg='#16213e',
+            fg='white'
+        ).pack(side='left', padx=10)
+        
+        self.color_values = ['white', 'black', 'red', 'yellow']
+        self.color_labels = ['⚪ Putih', '⚫ Hitam', '🔴 Merah', '🟡 Kuning']
+        self.color_var = tk.StringVar(value=self.color_values[0])
+        color_combo = ttk.Combobox(
+            dest_frame,
+            textvariable=self.color_var,
+            values=self.color_labels,
+            font=('Segoe UI', 10),
+            width=12,
+            state='readonly'
+        )
+        color_combo.pack(side='left', padx=5)
+        color_combo.current(0)
         
         # Stats
         self.stats_label = tk.Label(
@@ -216,7 +239,7 @@ class ModernLabelingTool:
             btn.pack(side='left', padx=5)
         
         # Keyboard shortcuts hint
-        shortcuts_text = "⌨️  Shortcuts: [P] Previous | [N] Next | [S] Save & Next | [D] Delete Box | [C] Clear All | [Q] Quit"
+        shortcuts_text = "⌨️  Shortcuts: [1-4] Warna | [P] Previous | [N] Next | [S] Save & Next | [D] Delete Box | [C] Clear All | [Q] Quit"
         tk.Label(
             bottom_frame,
             text=shortcuts_text,
@@ -224,6 +247,16 @@ class ModernLabelingTool:
             bg='#16213e',
             fg='#888888'
         ).pack(pady=(5, 0))
+        
+        # Color shortcuts hint
+        color_hint = "🎨 Warna: [1] ⚪ Putih | [2] ⚫ Hitam | [3] 🔴 Merah | [4] 🟡 Kuning"
+        tk.Label(
+            bottom_frame,
+            text=color_hint,
+            font=('Consolas', 9),
+            bg='#16213e',
+            fg='#00d4ff'
+        ).pack(pady=(0, 5))
         
         # Bind keyboard
         self.root.bind('<p>', lambda e: self.prev_image())
@@ -233,11 +266,25 @@ class ModernLabelingTool:
         self.root.bind('<c>', lambda e: self.clear_boxes())
         self.root.bind('<q>', lambda e: self.quit_app())
         
+        # Bind color shortcuts (1-4)
+        self.root.bind('1', lambda e: self.set_color(0))
+        self.root.bind('2', lambda e: self.set_color(1))
+        self.root.bind('3', lambda e: self.set_color(2))
+        self.root.bind('4', lambda e: self.set_color(3))
+        
     def darken_color(self, hex_color):
         """Darken hex color for hover effect"""
         rgb = tuple(int(hex_color.lstrip('#')[i:i+2], 16) for i in (0, 2, 4))
         darker = tuple(max(0, int(c * 0.7)) for c in rgb)
         return f'#{darker[0]:02x}{darker[1]:02x}{darker[2]:02x}'
+    
+    def set_color(self, idx):
+        """Set plate color by index (0-3)"""
+        if 0 <= idx < len(self.color_labels):
+            self.color_var.set(self.color_labels[idx])
+            # Update info to show selected color
+            color_indo = self.color_labels[idx]
+            messagebox.showinfo("🎨 Warna Dipilih", f"Warna plat: {color_indo}", parent=self.root)
     
     def upload_images(self):
         """Upload multiple images"""
@@ -411,8 +458,12 @@ class ModernLabelingTool:
         width = (x2 - x1) / img_w
         height = (y2 - y1) / img_h
         
-        # Add box
-        self.boxes.append([0, x_center, y_center, width, height])
+        # Get selected color
+        color_idx = self.color_labels.index(self.color_var.get()) if hasattr(self, 'color_labels') else 0
+        color = self.color_values[color_idx] if hasattr(self, 'color_values') else 'white'
+        
+        # Add box with color
+        self.boxes.append({'yolo': [0, x_center, y_center, width, height], 'color': color})
         
         # Redraw
         self.redraw_boxes()
@@ -436,29 +487,39 @@ class ModernLabelingTool:
         img_w = self.photo.width()
         img_h = self.photo.height()
         
+        # Color mapping
+        color_map = {'white':'#ffffff', 'black':'#333333', 'red':'#ff3333', 'yellow':'#ffcc00'}
+        color_indo = {'white':'Putih', 'black':'Hitam', 'red':'Merah', 'yellow':'Kuning'}
+        
         for i, box in enumerate(self.boxes):
-            # Convert from YOLO to pixel coords
-            _, x_center, y_center, width, height = box
+            # Support both dict (with color) and list (old format)
+            if isinstance(box, dict):
+                _, x_center, y_center, width, height = box['yolo']
+                color_name = box.get('color', 'white')
+            else:
+                _, x_center, y_center, width, height = box
+                color_name = 'white'
             
             x1 = (x_center - width/2) * img_w + self.offset_x
             y1 = (y_center - height/2) * img_h + self.offset_y
             x2 = (x_center + width/2) * img_w + self.offset_x
             y2 = (y_center + height/2) * img_h + self.offset_y
             
-            # Draw box
-            color = '#00ff00' if i == len(self.boxes) - 1 else '#00d4ff'
+            # Draw box with color
+            display_color = color_map.get(color_name, '#00ff00')
             self.canvas.create_rectangle(
                 x1, y1, x2, y2,
-                outline=color,
-                width=2,
+                outline=display_color,
+                width=3,
                 tags='box'
             )
             
-            # Draw label
+            # Draw label with color name
+            indo_name = color_indo.get(color_name, 'Putih')
             self.canvas.create_text(
                 x1, y1 - 5,
-                text=f"Plate #{i+1}",
-                fill=color,
+                text=f"Plat #{i+1} ({indo_name})",
+                fill=display_color,
                 font=('Segoe UI', 9, 'bold'),
                 anchor='sw',
                 tags='label'
@@ -528,13 +589,30 @@ class ModernLabelingTool:
         labels_dir.mkdir(parents=True, exist_ok=True)
         images_dir.mkdir(parents=True, exist_ok=True)
         
-        # Save label file
+        # Save label files
         img_path = Path(image_path)
         label_path = labels_dir / f"{img_path.stem}.txt"
+        json_path = labels_dir / f"{img_path.stem}.json"
         
+        # Save YOLO .txt format
         with open(label_path, 'w') as f:
             for box in boxes:
-                f.write(' '.join(map(str, box)) + '\n')
+                if isinstance(box, dict):
+                    yolo = box['yolo']
+                else:
+                    yolo = box
+                f.write(' '.join(map(str, yolo)) + '\n')
+        
+        # Save JSON with color info
+        json_boxes = []
+        for box in boxes:
+            if isinstance(box, dict):
+                json_boxes.append({'yolo': box['yolo'], 'color': box.get('color', 'white')})
+            else:
+                json_boxes.append({'yolo': box, 'color': 'white'})
+        
+        with open(json_path, 'w') as jf:
+            json.dump({'boxes': json_boxes}, jf, indent=2)
         
         # Copy image
         dest_image = images_dir / img_path.name
