@@ -73,7 +73,7 @@ checkpoints/
 logs/
 *.csv
 results/
-*.json
+# *.json
 !package.json
 !tsconfig.json
 
