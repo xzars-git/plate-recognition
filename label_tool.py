@@ -57,6 +57,10 @@ class ModernLabelingTool:
         self.drag_offset_x = 0
         self.drag_offset_y = 0
         
+        # Auto-export color crops toggle
+        self.auto_export_crops = tk.BooleanVar(value=True)
+        self.color_export_dir = Path('dataset/plate_colors')
+        
         # Dataset destinations
         self.destinations = {
             'Plate Detection (Color) - Train': 'dataset/plate_detection_color/train',
@@ -183,6 +187,20 @@ class ModernLabelingTool:
         )
         color_combo.pack(side='left', padx=5)
         color_combo.current(0)
+        
+        # Auto-export crops checkbox
+        auto_export_cb = tk.Checkbutton(
+            dest_frame,
+            text="📦 Auto-export crops",
+            variable=self.auto_export_crops,
+            font=('Segoe UI', 9),
+            bg='#16213e',
+            fg='white',
+            selectcolor='#0f3460',
+            activebackground='#16213e',
+            activeforeground='white'
+        )
+        auto_export_cb.pack(side='left', padx=10)
         
         # Stats
         self.stats_label = tk.Label(
@@ -311,7 +329,7 @@ class ModernLabelingTool:
             btn.pack(side='left', padx=5)
         
         # Keyboard shortcuts hint
-        shortcuts_text = "⌨️  Shortcuts: [1-4] Warna | [P] Previous | [N] Next | [S] Save & Next | [D] Delete Box | [C] Clear All | [Q] Quit | [Esc] Cancel Polygon"
+        shortcuts_text = "⌨️  Shortcuts: [1-4] Warna | [P] Previous | [N] Next | [S] Save & Next | [D] Delete Box | [C] Clear All | [Q] Quit | [F/Enter] Finish Polygon | [Esc] Cancel"
         tk.Label(
             bottom_frame,
             text=shortcuts_text,
@@ -339,6 +357,7 @@ class ModernLabelingTool:
         self.root.bind('<q>', lambda e: self.quit_app())
         self.root.bind('<Return>', lambda e: self.finish_polygon())
         self.root.bind('<Escape>', lambda e: self.cancel_polygon())
+        self.root.bind('<f>', lambda e: self.finish_polygon())  # [F] to close polygon
         
         # Bind color shortcuts (1-4)
         self.root.bind('1', lambda e: self.set_color(0))
@@ -646,26 +665,43 @@ class ModernLabelingTool:
             # Add point to polygon
             self.polygon_points.append((event.x, event.y))
             
-            # Draw point
-            point = self.canvas.create_oval(
-                event.x - 3, event.y - 3,
-                event.x + 3, event.y + 3,
-                fill='#00ff00', outline='#00ff00'
-            )
-            self.temp_polygon_items.append(point)
+            # Clear old temp items and redraw everything
+            for item in self.temp_polygon_items:
+                self.canvas.delete(item)
+            self.temp_polygon_items = []
             
-            # Draw line to previous point
-            if len(self.polygon_points) > 1:
-                prev = self.polygon_points[-2]
+            # Draw all points
+            for i, (px, py) in enumerate(self.polygon_points):
+                point = self.canvas.create_oval(
+                    px - 3, py - 3,
+                    px + 3, py + 3,
+                    fill='#00ff00', outline='#00ff00'
+                )
+                self.temp_polygon_items.append(point)
+            
+            # Draw all lines (including closing line if 3+ points)
+            for i in range(len(self.polygon_points)):
+                if len(self.polygon_points) < 2:
+                    break
+                    
+                next_idx = (i + 1) % len(self.polygon_points)
+                
+                # Only draw closing line if we have 3+ points
+                if i == len(self.polygon_points) - 1 and len(self.polygon_points) < 3:
+                    break
+                
+                p1 = self.polygon_points[i]
+                p2 = self.polygon_points[next_idx]
                 line = self.canvas.create_line(
-                    prev[0], prev[1], event.x, event.y,
-                    fill='#00ff00', width=2
+                    p1[0], p1[1], p2[0], p2[1],
+                    fill='#00ff00', width=2,
+                    dash=(5, 5) if i == len(self.polygon_points) - 1 else ()
                 )
                 self.temp_polygon_items.append(line)
             
             # Update info
             zoom_pct = int(self.zoom_level * 100)
-            hint = "(Click first point to close)" if len(self.polygon_points) >= 3 else "(Keep clicking points)"
+            hint = "(Press [F] or click first point to close)" if len(self.polygon_points) >= 3 else "(Keep clicking points)"
             self.info_label.config(
                 text=f"⬟ Polygon: {len(self.polygon_points)} points {hint} | 🔍 {zoom_pct}%"
             )
@@ -765,6 +801,409 @@ class ModernLabelingTool:
                  f"Image {self.current_idx+1}/{len(self.images)} | "
                  f"🏷️ {len(self.boxes)} boxes | 🔍 {zoom_pct}% | ✅ Auto-saved"
         )
+    
+    def export_color_crop(self, image_path, box, box_idx):
+        """Export plate crop to color dataset folder"""
+        if not self.auto_export_crops.get():
+            return
+        
+        try:
+            # Load original image
+            img = Image.open(image_path)
+            img_w, img_h = img.size
+            
+            # Get bounding box coordinates
+            box_type = box.get('type', 'box') if isinstance(box, dict) else 'box'
+            color = box.get('color', 'white') if isinstance(box, dict) else 'white'
+            
+            if box_type == 'polygon':
+                # Convert polygon to bounding box
+                points = box['points']
+                xs = [p[0] for p in points]
+                ys = [p[1] for p in points]
+                
+                x_min, y_min = min(xs), min(ys)
+                x_max, y_max = max(xs), max(ys)
+            else:
+                # Box format
+                if 'yolo' in box:
+                    _, x_center, y_center, width, height = box['yolo']
+                else:
+                    _, x_center, y_center, width, height = box
+                
+                x_min = x_center - width / 2
+                y_min = y_center - height / 2
+                x_max = x_center + width / 2
+                y_max = y_center + height / 2
+            
+            # Convert to pixels
+            x1 = int(x_min * img_w)
+            y1 = int(y_min * img_h)
+            x2 = int(x_max * img_w)
+            y2 = int(y_max * img_h)
+            
+            # Clamp to image bounds
+            x1 = max(0, x1)
+            y1 = max(0, y1)
+            x2 = min(img_w, x2)
+            y2 = min(img_h, y2)
+            
+            # Validate crop size
+            if (x2 - x1) < 20 or (y2 - y1) < 20:
+                return  # Too small
+            
+            # Crop plate
+            plate_crop = img.crop((x1, y1, x2, y2))
+            
+            # Resize to standard size (96x96)
+            plate_resized = plate_crop.resize((96, 96), Image.Resampling.LANCZOS)
+            
+            # Save to color folder
+            # 80% train, 20% val
+            img_name = Path(image_path).stem
+            split = 'train' if hash(img_name) % 5 != 0 else 'val'
+            
+            color_dir = self.color_export_dir / split / color
+            color_dir.mkdir(parents=True, exist_ok=True)
+            
+            output_file = color_dir / f"{img_name}_{box_idx}.jpg"
+            plate_resized.save(output_file, quality=95)
+            
+        except Exception as e:
+            print(f"Failed to export color crop: {e}")
+    
+    def save_to_destination(self, image_path, boxes):
+        """Save labels and image to selected destination"""
+        dest_name = self.dest_var.get()
+        dest_path = self.destinations.get(dest_name)
+        
+        if not dest_path:
+            return
+        
+        dest_path = Path(dest_path)
+        labels_dir = dest_path / 'labels'
+        images_dir = dest_path / 'images'
+        
+        # Create dirs
+        labels_dir.mkdir(parents=True, exist_ok=True)
+        images_dir.mkdir(parents=True, exist_ok=True)
+        
+        # Save label files
+        img_path = Path(image_path)
+        label_path = labels_dir / f"{img_path.stem}.txt"
+        json_path = labels_dir / f"{img_path.stem}.json"
+        
+        # Save YOLO .txt format (convert polygons to bounding boxes for YOLO compatibility)
+        with open(label_path, 'w') as f:
+            for box in boxes:
+                box_type = box.get('type', 'box') if isinstance(box, dict) else 'box'
+                
+                if box_type == 'polygon':
+                    # Convert polygon to bounding box for YOLO
+                    points = box['points']
+                    xs = [p[0] for p in points]
+                    ys = [p[1] for p in points]
+                    
+                    x_min, x_max = min(xs), max(xs)
+                    y_min, y_max = min(ys), max(ys)
+                    
+                    x_center = (x_min + x_max) / 2
+                    y_center = (y_min + y_max) / 2
+                    width = x_max - x_min
+                    height = y_max - y_min
+                    
+                    yolo = [0, x_center, y_center, width, height]
+                elif 'yolo' in box:
+                    yolo = box['yolo']
+                else:
+                    yolo = box
+                
+                f.write(' '.join(map(str, yolo)) + '\n')
+        
+        # Save JSON with full info (polygon or box)
+        json_boxes = []
+        for idx, box in enumerate(boxes):
+            if isinstance(box, dict):
+                box_type = box.get('type', 'box')
+                if box_type == 'polygon':
+                    json_boxes.append({
+                        'type': 'polygon',
+                        'points': box['points'],
+                        'color': box.get('color', 'white')
+                    })
+                else:
+                    json_boxes.append({
+                        'type': 'box',
+                        'yolo': box.get('yolo', box),
+                        'color': box.get('color', 'white')
+                    })
+            else:
+                json_boxes.append({
+                    'type': 'box',
+                    'yolo': box,
+                    'color': 'white'
+                })
+            
+            # Auto-export color crop
+            self.export_color_crop(image_path, box, idx)
+        
+        with open(json_path, 'w') as jf:
+            json.dump({'boxes': json_boxes}, jf, indent=2)
+        
+        # Copy image
+        dest_image = images_dir / img_path.name
+        if not dest_image.exists():
+            shutil.copy(image_path, dest_image)
+        
+        # ====================================================================
+        # AUTO-EXPORT COLOR CROPS - Save plate color crops if enabled
+        # ====================================================================
+        if self.auto_export_crops.get() and boxes and 'color' in boxes[0]:
+            # Create color export directory if it doesn't exist
+            self.color_export_dir.mkdir(parents=True, exist_ok=True)
+            
+            # Extract dominant color from the first box (assuming it's the plate box)
+            plate_color = boxes[0]['color']
+            color_name = plate_color.capitalize()  # Capitalize for folder name
+            
+            # Create subdirectory for the color if it doesn't exist
+            color_dir = self.color_export_dir / color_name
+            color_dir.mkdir(parents=True, exist_ok=True)
+            
+            # Copy the image to the color directory
+            shutil.copy(image_path, color_dir / img_path.name)
+            
+            # Save a separate label file in the color directory
+            color_label_path = color_dir / f"{img_path.stem}.txt"
+            with open(color_label_path, 'w') as f:
+                for box in boxes:
+                    if box.get('color') == plate_color:  # Only save the plate box
+                        box_type = box.get('type', 'box') if isinstance(box, dict) else 'box'
+                        
+                        if box_type == 'polygon':
+                            # Convert polygon to bounding box for YOLO
+                            points = box['points']
+                            xs = [p[0] for p in points]
+                            ys = [p[1] for p in points]
+                            
+                            x_min, x_max = min(xs), max(xs)
+                            y_min, y_max = min(ys), max(ys)
+                            
+                            x_center = (x_min + x_max) / 2
+                            y_center = (y_min + y_max) / 2
+                            width = x_max - x_min
+                            height = y_max - y_min
+                            
+                            yolo = [0, x_center, y_center, width, height]
+                        elif 'yolo' in box:
+                            yolo = box['yolo']
+                        else:
+                            yolo = box
+                        
+                        f.write(' '.join(map(str, yolo)) + '\n')
+    
+    def prev_image(self):
+        """Previous image"""
+        if self.current_idx > 0:
+            self.save_current()
+            self.load_image(self.current_idx - 1)
+    
+    def next_image(self):
+        """Next image"""
+        if self.current_idx < len(self.images) - 1:
+            self.save_current()
+            self.load_image(self.current_idx + 1)
+    
+    def update_stats(self):
+        """Update statistics"""
+        total = len(self.images)
+        labeled = sum(1 for img in self.images if img in self.all_labels and self.all_labels[img])
+        self.stats_label.config(text=f"📊 {total} images | {labeled} labeled")
+    
+    def quit_app(self):
+        """Quit application"""
+        if messagebox.askyesno("Quit", "Save current progress and quit?"):
+            self.save_current()
+            self.root.destroy()
+    
+    def on_pan_start(self, event):
+        """Start panning with right mouse button"""
+        self.panning = True
+        self.pan_start_x = event.x
+        self.pan_start_y = event.y
+        self.canvas.config(cursor='fleur')  # Change cursor to move
+    
+    def on_pan_move(self, event):
+        """Pan the image"""
+        if not self.panning:
+            return
+        
+        # Calculate pan delta
+        dx = event.x - self.pan_start_x
+        dy = event.y - self.pan_start_y
+        
+        # Update image offset
+        self.image_offset_x += dx
+        self.image_offset_y += dy
+        
+        # Update start position for next move
+        self.pan_start_x = event.x
+        self.pan_start_y = event.y
+        
+        # Refresh canvas
+        self.refresh_canvas()
+    
+    def on_pan_end(self, event):
+        """End panning"""
+        self.panning = False
+        self.canvas.config(cursor='')  # Reset cursor
+    
+    def redraw_polygon_points(self):
+        """Redraw polygon points after zoom/pan"""
+        if not self.polygon_points or self.draw_mode != 'polygon':
+            return
+        
+        # Clear old polygon items
+        for item in self.temp_polygon_items:
+            self.canvas.delete(item)
+        self.temp_polygon_items = []
+        
+        # Redraw points and lines
+        for i, (x, y) in enumerate(self.polygon_points):
+            # Draw point
+            point = self.canvas.create_oval(
+                x - 3, y - 3,
+                x + 3, y + 3,
+                fill='#00ff00', outline='#00ff00'
+            )
+            self.temp_polygon_items.append(point)
+            
+            # Draw line to next point (including closing line)
+            if len(self.polygon_points) > 1:
+                next_idx = (i + 1) % len(self.polygon_points)
+                next_x, next_y = self.polygon_points[next_idx]
+                line = self.canvas.create_line(
+                    x, y, next_x, next_y,
+                    fill='#00ff00', width=2
+                )
+                self.temp_polygon_items.append(line)
+    
+    def on_shape_drag_start(self, event):
+        """Start dragging a box/polygon with Ctrl+Left Click"""
+        if not self.photo or not self.boxes:
+            return
+        
+        # Find which box/polygon was clicked
+        click_x = event.x
+        click_y = event.y
+        
+        img_w = self.photo.width()
+        img_h = self.photo.height()
+        
+        for idx, box in enumerate(self.boxes):
+            box_type = box.get('type', 'box') if isinstance(box, dict) else 'box'
+            
+            if box_type == 'polygon':
+                # Check if click is inside polygon
+                points = box['points']
+                canvas_points = []
+                for norm_x, norm_y in points:
+                    x = norm_x * img_w + self.offset_x
+                    y = norm_y * img_h + self.offset_y
+                    canvas_points.append((x, y))
+                
+                # Simple point-in-polygon check (bounding box)
+                xs = [p[0] for p in canvas_points]
+                ys = [p[1] for p in canvas_points]
+                if min(xs) <= click_x <= max(xs) and min(ys) <= click_y <= max(ys):
+                    self.dragging_shape = True
+                    self.selected_box_idx = idx
+                    self.drag_offset_x = click_x
+                    self.drag_offset_y = click_y
+                    self.canvas.config(cursor='hand2')
+                    return
+            else:
+                # Check if click is inside rectangle
+                if 'yolo' in box:
+                    _, x_center, y_center, width, height = box['yolo']
+                else:
+                    _, x_center, y_center, width, height = box
+                
+                x1 = (x_center - width/2) * img_w + self.offset_x
+                y1 = (y_center - height/2) * img_h + self.offset_y
+                x2 = (x_center + width/2) * img_w + self.offset_x
+                y2 = (y_center + height/2) * img_h + self.offset_y
+                
+                if x1 <= click_x <= x2 and y1 <= click_y <= y2:
+                    self.dragging_shape = True
+                    self.selected_box_idx = idx
+                    self.drag_offset_x = click_x
+                    self.drag_offset_y = click_y
+                    self.canvas.config(cursor='hand2')
+                    return
+    
+    def on_shape_drag_move(self, event):
+        """Move the selected box/polygon"""
+        if not self.dragging_shape or self.selected_box_idx is None:
+            return
+        
+        # Calculate movement delta
+        dx = event.x - self.drag_offset_x
+        dy = event.y - self.drag_offset_y
+        
+        # Update drag start position
+        self.drag_offset_x = event.x
+        self.drag_offset_y = event.y
+        
+        # Convert delta to normalized coordinates
+        img_w = self.photo.width()
+        img_h = self.photo.height()
+        norm_dx = dx / img_w
+        norm_dy = dy / img_h
+        
+        # Update box/polygon position
+        box = self.boxes[self.selected_box_idx]
+        box_type = box.get('type', 'box') if isinstance(box, dict) else 'box'
+        
+        if box_type == 'polygon':
+            # Move all polygon points
+            for point in box['points']:
+                point[0] += norm_dx
+                point[1] += norm_dy
+        else:
+            # Move box center
+            if 'yolo' in box:
+                box['yolo'][1] += norm_dx  # x_center
+                box['yolo'][2] += norm_dy  # y_center
+            else:
+                box[1] += norm_dx
+                box[2] += norm_dy
+        
+        # Redraw
+        self.redraw_boxes()
+    
+    def on_shape_drag_end(self, event):
+        """End dragging and save"""
+        if not self.dragging_shape:
+            return
+        
+        self.dragging_shape = False
+        self.selected_box_idx = None
+        self.canvas.config(cursor='')
+        
+        # Auto-save
+        if self.current_idx < len(self.images):
+            image_path = self.images[self.current_idx]
+            self.all_labels[image_path] = self.boxes.copy()
+            self.save_to_destination(image_path, self.boxes)
+            
+            # Update info
+            zoom_pct = int(self.zoom_level * 100)
+            self.info_label.config(
+                text=f"📷 {Path(image_path).name} | "
+                     f"Image {self.current_idx+1}/{len(self.images)} | "
+                     f"🏷️ {len(self.boxes)} boxes | 🔍 {zoom_pct}% | ✅ Moved & saved"
+            )
     
     def redraw_boxes(self):
         """Redraw all boxes/polygons on canvas"""
@@ -909,171 +1348,6 @@ class ModernLabelingTool:
         self.save_to_destination(image_path, self.boxes)
         
         self.update_stats()
-    
-    def save_to_destination(self, image_path, boxes):
-        """Save labels and image to selected destination"""
-        dest_name = self.dest_var.get()
-        dest_path = self.destinations.get(dest_name)
-        
-        if not dest_path:
-            return
-        
-        dest_path = Path(dest_path)
-        labels_dir = dest_path / 'labels'
-        images_dir = dest_path / 'images'
-        
-        # Create dirs
-        labels_dir.mkdir(parents=True, exist_ok=True)
-        images_dir.mkdir(parents=True, exist_ok=True)
-        
-        # Save label files
-        img_path = Path(image_path)
-        label_path = labels_dir / f"{img_path.stem}.txt"
-        json_path = labels_dir / f"{img_path.stem}.json"
-        
-        # Save YOLO .txt format (convert polygons to bounding boxes for YOLO compatibility)
-        with open(label_path, 'w') as f:
-            for box in boxes:
-                box_type = box.get('type', 'box') if isinstance(box, dict) else 'box'
-                
-                if box_type == 'polygon':
-                    # Convert polygon to bounding box for YOLO
-                    points = box['points']
-                    xs = [p[0] for p in points]
-                    ys = [p[1] for p in points]
-                    
-                    x_min, x_max = min(xs), max(xs)
-                    y_min, y_max = min(ys), max(ys)
-                    
-                    x_center = (x_min + x_max) / 2
-                    y_center = (y_min + y_max) / 2
-                    width = x_max - x_min
-                    height = y_max - y_min
-                    
-                    yolo = [0, x_center, y_center, width, height]
-                elif 'yolo' in box:
-                    yolo = box['yolo']
-                else:
-                    yolo = box
-                
-                f.write(' '.join(map(str, yolo)) + '\n')
-        
-        # Save JSON with full info (polygon or box)
-        json_boxes = []
-        for box in boxes:
-            if isinstance(box, dict):
-                box_type = box.get('type', 'box')
-                if box_type == 'polygon':
-                    json_boxes.append({
-                        'type': 'polygon',
-                        'points': box['points'],
-                        'color': box.get('color', 'white')
-                    })
-                else:
-                    json_boxes.append({
-                        'type': 'box',
-                        'yolo': box.get('yolo', box),
-                        'color': box.get('color', 'white')
-                    })
-            else:
-                json_boxes.append({
-                    'type': 'box',
-                    'yolo': box,
-                    'color': 'white'
-                })
-        
-        with open(json_path, 'w') as jf:
-            json.dump({'boxes': json_boxes}, jf, indent=2)
-        
-        # Copy image
-        dest_image = images_dir / img_path.name
-        if not dest_image.exists():
-            shutil.copy(image_path, dest_image)
-    
-    def prev_image(self):
-        """Previous image"""
-        if self.current_idx > 0:
-            self.save_current()
-            self.load_image(self.current_idx - 1)
-    
-    def next_image(self):
-        """Next image"""
-        if self.current_idx < len(self.images) - 1:
-            self.save_current()
-            self.load_image(self.current_idx + 1)
-    
-    def update_stats(self):
-        """Update statistics"""
-        total = len(self.images)
-        labeled = sum(1 for img in self.images if img in self.all_labels and self.all_labels[img])
-        self.stats_label.config(text=f"📊 {total} images | {labeled} labeled")
-    
-    def quit_app(self):
-        """Quit application"""
-        if messagebox.askyesno("Quit", "Save current progress and quit?"):
-            self.save_current()
-            self.root.destroy()
-    
-    def on_pan_start(self, event):
-        """Start panning with right mouse button"""
-        self.panning = True
-        self.pan_start_x = event.x
-        self.pan_start_y = event.y
-        self.canvas.config(cursor='fleur')  # Change cursor to move
-    
-    def on_pan_move(self, event):
-        """Pan the image"""
-        if not self.panning:
-            return
-        
-        # Calculate pan delta
-        dx = event.x - self.pan_start_x
-        dy = event.y - self.pan_start_y
-        
-        # Update image offset
-        self.image_offset_x += dx
-        self.image_offset_y += dy
-        
-        # Update start position for next move
-        self.pan_start_x = event.x
-        self.pan_start_y = event.y
-        
-        # Refresh canvas
-        self.refresh_canvas()
-    
-    def on_pan_end(self, event):
-        """End panning"""
-        self.panning = False
-        self.canvas.config(cursor='')  # Reset cursor
-    
-    def redraw_polygon_points(self):
-        """Redraw polygon points after zoom/pan"""
-        if not self.polygon_points or self.draw_mode != 'polygon':
-            return
-        
-        # Clear old polygon items
-        for item in self.temp_polygon_items:
-            self.canvas.delete(item)
-        self.temp_polygon_items = []
-        
-        # Redraw points and lines
-        for i, (x, y) in enumerate(self.polygon_points):
-            # Draw point
-            point = self.canvas.create_oval(
-                x - 3, y - 3,
-                x + 3, y + 3,
-                fill='#00ff00', outline='#00ff00'
-            )
-            self.temp_polygon_items.append(point)
-            
-            # Draw line to previous point
-            if i > 0:
-                prev_x, prev_y = self.polygon_points[i-1]
-                line = self.canvas.create_line(
-                    prev_x, prev_y, x, y,
-                    fill='#00ff00', width=2
-                )
-                self.temp_polygon_items.append(line)
     
     def on_shape_drag_start(self, event):
         """Start dragging a box/polygon with Ctrl+Left Click"""
