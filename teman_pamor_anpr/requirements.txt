@@ -1,0 +1,20 @@
+# Dependencies untuk YOLOv11 ANPR dengan Rotation Correction
+
+# Core dependencies
+ultralytics>=8.3.0      # YOLOv11 (latest)
+opencv-python>=4.8.0    # Computer vision & image processing
+torch>=2.0.0            # PyTorch (deep learning framework)
+torchvision>=0.15.0     # PyTorch vision utilities
+numpy>=1.24.0           # Numerical computing
+Pillow>=10.0.0          # Image processing
+
+# OCR untuk Character Recognition
+paddlepaddle>=2.5.0     # PaddlePaddle framework
+paddleocr>=2.7.0        # PaddleOCR untuk text recognition
+
+# Optional (untuk visualisasi & monitoring)
+matplotlib>=3.7.0       # Plotting
+pandas>=2.0.0           # Data manipulation
+
+# Optional (untuk monitoring training)
+tensorboard>=2.13.0     # TensorBoard untuk monitoring training

@@ -1,0 +1,56 @@
+{
+  "models": {
+    "plate_detector": {
+      "version": "1.0.0",
+      "architecture": "YOLOv11n",
+      "input_size": [
+        640,
+        640
+      ],
+      "accuracy": 0.816,
+      "latency_ms": 50,
+      "size_mb": 6.2,
+      "trained_date": "2025-01-10",
+      "status": "production"
+    },
+    "color_classifier": {
+      "version": "0.1.0",
+      "architecture": "MobileNetV2",
+      "input_size": [
+        96,
+        96
+      ],
+      "accuracy": 0.0,
+      "latency_ms": 15,
+      "size_mb": 2.0,
+      "trained_date": "pending",
+      "status": "development"
+    },
+    "ocr_custom": {
+      "version": "0.0.1",
+      "architecture": "CRNN",
+      "input_size": [
+        128,
+        32
+      ],
+      "accuracy": 0.0,
+      "latency_ms": 30,
+      "size_mb": 5.0,
+      "trained_date": "pending",
+      "status": "backlog"
+    },
+    "anti_spoofing": {
+      "version": "0.0.1",
+      "architecture": "MobileNetV2",
+      "input_size": [
+        224,
+        224
+      ],
+      "accuracy": 0.0,
+      "latency_ms": 20,
+      "size_mb": 3.0,
+      "trained_date": "pending",
+      "status": "backlog"
+    }
+  }
+}

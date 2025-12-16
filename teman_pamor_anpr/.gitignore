@@ -1,0 +1,53 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+ENV/
+build/
+dist/
+*.egg-info/
+
+# Jupyter Notebook
+.ipynb_checkpoints
+
+# Data
+01_data_platform/datasets/00_raw/*
+01_data_platform/datasets/01_validated/*
+01_data_platform/datasets/02_augmented/*
+!01_data_platform/datasets/**/.gitkeep
+
+# Model checkpoints
+02_training_platform/*/checkpoints/*.pt
+02_training_platform/*/checkpoints/*.h5
+02_training_platform/*/checkpoints/*.pth
+!02_training_platform/*/checkpoints/.gitkeep
+
+# Experiments
+02_training_platform/*/experiments/*
+!02_training_platform/*/experiments/.gitkeep
+
+# Logs
+02_training_platform/*/logs/
+*.log
+
+# TFLite models (too large)
+03_deployment_platform/mobile_models/*/*.tflite
+03_deployment_platform/mobile_models/*/metadata.json
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Backup
+backup_*/
