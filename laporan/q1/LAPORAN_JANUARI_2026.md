@@ -36,10 +36,10 @@ Untuk menjaga maintainability, dilakukan refactoring pada bagian kode yang berda
 
 Ruang lingkup pekerjaan:
 
-- Penyederhanaan struktur fungsi dan pemisahan tanggung jawab logika agar lebih modular.
-- Perbaikan pola logging untuk mempermudah pelacakan issue di lingkungan pengujian.
-- Penataan ulang beberapa utilitas agar reusable dan tidak duplikasi.
-- Pembersihan kode lama yang sudah tidak relevan terhadap arsitektur terbaru.
+Penyederhanaan struktur fungsi dan pemisahan tanggung jawab logika agar lebih modular.
+Perbaikan pola logging untuk mempermudah pelacakan issue di lingkungan pengujian.
+Penataan ulang beberapa utilitas agar reusable dan tidak duplikasi.
+Pembersihan kode lama yang sudah tidak relevan terhadap arsitektur terbaru.
 
 Hasil utama:
 
@@ -64,7 +64,7 @@ Hasil utama:
 - Penanganan edge case lebih baik pada kondisi hasil deteksi ambigu.
 - Data penelusuran lebih lengkap untuk keperluan analitik lanjutan.
 
-### 4. Inisiasi Proyek Pengembangan Model AI
+### 4. Pengembangan Model AI
 
 Selain pengembangan aplikasi, pada Januari dimulai pekerjaan khusus untuk pengembangan model AI sebagai fondasi peningkatan akurasi deteksi di fase berikutnya.
 
@@ -85,6 +85,18 @@ Progres Januari untuk AI:
 
 Catatan penting:
 Fase Januari berfokus pada fondasi riset dan validasi awal. Implementasi penuh ke produksi dijadwalkan bertahap setelah hasil evaluasi model memenuhi ambang kualitas yang ditentukan.
+
+#### Penambahan Progres Lanjutan Pengembangan Model AI
+
+Pada Januari 2026, pengembangan model AI OCR dilanjutkan dengan fokus pada perapihan fondasi teknis yang telah dibangun pada periode sebelumnya. Baseline model telah tersedia dan digunakan sebagai acuan utama untuk evaluasi ulang performa pada skenario data yang lebih terstruktur. Aktivitas utama mencakup peninjauan ulang metrik baseline, penyesuaian konfigurasi uji internal, serta penataan kembali pipeline data agar alur ingestion, validasi, dan pemisahan dataset berjalan lebih konsisten.
+
+Output awal Januari meliputi baseline terverifikasi ulang, daftar isu kualitas data prioritas, dan perbaikan alur pipeline untuk mendukung siklus eksperimen berikutnya. Dampak dari kegiatan ini adalah meningkatnya kesiapan eksperimen 2026 karena proses evaluasi menjadi lebih terukur dan dapat direplikasi. Hingga akhir Januari, status pekerjaan masih pada tahap validasi internal dan belum dilakukan implementasi ke aplikasi mobile production.
+
+#### Penambahan Progres Lanjutan Labeling Tools
+
+Pada aspek labeling tools, Januari difokuskan pada penguatan kualitas anotasi dan konsistensi operasional proses pelabelan. Tim melanjutkan perangkat yang sudah ada melalui standardisasi ulang pedoman anotasi, perapihan struktur label, serta penyelarasan aturan quality check antar-annotator. Sejalan dengan itu, dilakukan pembersihan dan penandaan ulang sebagian sampel untuk mengurangi noise label dan meningkatkan reliabilitas data latih OCR.
+
+Capaian utama bulan ini adalah meningkatnya keseragaman hasil anotasi, tersusunnya daftar validasi kualitas anotasi internal, dan meningkatnya kesiapan dataset berlabel untuk eksperimen lanjutan 2026. Secara status, pekerjaan tetap berada pada fase validasi internal dan belum diarahkan ke penggunaan produksi.
 
 ### 5. Pengujian, Validasi, dan Quality Control
 
