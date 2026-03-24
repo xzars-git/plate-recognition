@@ -72,6 +72,18 @@ Hasil utama:
 - Kualitas anotasi menjadi lebih konsisten untuk kebutuhan pelatihan model.
 - Siklus eksperimen model menjadi lebih efisien karena data siap pakai tersedia lebih cepat.
 
+#### Penambahan Progres Model AI (Penyempurnaan dari Baseline Sebelumnya)
+
+Pada Februari 2026, pengembangan model AI OCR difokuskan pada tuning lanjutan dari baseline yang telah tersedia dari periode sebelumnya. Aktivitas utama diarahkan pada penyetelan parameter pelatihan, penyesuaian strategi preprocessing, dan evaluasi ulang performa per skenario data sulit agar hasil pengujian lebih stabil dan terukur. Tim juga melakukan komparasi antar konfigurasi eksperimen untuk menilai keseimbangan antara akurasi pembacaan, konsistensi inferensi, dan efisiensi waktu proses.
+
+Output tambahan bulan ini berupa daftar konfigurasi kandidat yang lebih robust terhadap variasi kualitas citra, ringkasan metrik evaluasi internal yang lebih konsisten, serta prioritas eksperimen lanjutan untuk siklus berikutnya. Dampak operasionalnya adalah peningkatan kecepatan siklus training-evaluasi karena keputusan eksperimen dapat diambil lebih cepat berbasis data pembanding yang lebih rapi.
+
+#### Penambahan Progres Labeling Tools (Peningkatan Workflow dan QA)
+
+Pada sisi labeling tools, Februari diarahkan pada penguatan workflow operasional dan quality assurance secara berlapis. Perbaikan dilakukan melalui penajaman mekanisme review, penerapan audit sampling yang lebih rutin pada batch kritis, serta refinement guideline anotasi untuk menurunkan variasi interpretasi antar labeler. Selain itu, proses tracking status anotasi dan revisi dipertegas agar alur kerja lebih terpantau dan waktu tindak lanjut lebih singkat.
+
+Hasil awal menunjukkan peningkatan konsistensi anotasi dan berkurangnya temuan koreksi berulang pada tahap validasi internal. Kondisi ini berdampak langsung pada percepatan ketersediaan data latih yang siap digunakan dalam eksperimen model. Hingga akhir Februari, integrasi ke mobile app masih berada pada tahap persiapan teknis dan internal testing, serta belum masuk implementasi final ke produksi.
+
 ### 4. Integrasi Bertahap AI ke Alur Aplikasi
 
 Selama Februari dilakukan persiapan teknis untuk menghubungkan hasil eksperimen AI dengan kebutuhan aplikasi mobile secara aman.
