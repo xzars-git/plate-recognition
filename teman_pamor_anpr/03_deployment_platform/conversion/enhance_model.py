@@ -6,6 +6,9 @@ Menggunakan augmentasi lebih agresif dan hyperparameter tuning
 from ultralytics import YOLO
 import torch
 import os
+from pathlib import Path
+
+REPO_ROOT = Path(__file__).resolve().parents[3]
 
 def train_enhanced_model():
     """Train model dengan konfigurasi enhanced untuk akurasi lebih tinggi"""
@@ -30,7 +33,7 @@ def train_enhanced_model():
     # ULTIMATE CONFIGURATION - BEST PERFORMANCE 🏆
     config = {
         # Basic settings - EXTENDED TRAINING
-        'data': 'dataset/plate_detection_augmented/plate_detection_augmented.yaml',
+        'data': str(REPO_ROOT / 'dataset' / 'plate_detection_augmented' / 'plate_detection_augmented.yaml'),
         'epochs': 200,  # 🏆 Extended untuk maximum convergence
         'batch': 16,
         'imgsz': 640,

@@ -221,6 +221,13 @@ python src/train.py
 
 ## 🏗️ Project Structure (Detailed)
 
+> Legacy note: this detailed section contains historical snapshots and may not fully match the latest workspace layout.
+> For current, runnable commands and structure, use:
+>
+> - `teman_pamor_anpr/README.md`
+> - `teman_pamor_anpr/docs/guides/TRAINING_GUIDE.md`
+> - `teman_pamor_anpr/docs/guides/DEPLOYMENT_GUIDE.md`
+
 ```
 plate-recognition/
 ├── 🎯 PRODUCTION FILES
@@ -572,7 +579,6 @@ RuntimeError: CUDA out of memory
   - Reason: Best precision-speed balance (81.64%, 1.30ms)
   - Trade-off: Slightly lower recall for higher precision
 - **Rotation Handling**: Pre-detection rotation correction
-
   - Handles: 90°, 180°, 270° discrete rotations
   - Limitation: Cannot handle arbitrary angles (45°, 30°, etc.)
   - Future: Consider YOLO-OBB for arbitrary angle support
