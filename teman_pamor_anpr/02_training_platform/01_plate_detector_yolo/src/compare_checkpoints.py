@@ -7,13 +7,15 @@ from ultralytics import YOLO
 import os
 from pathlib import Path
 
+REPO_ROOT = Path(__file__).resolve().parents[4]
+
 def main():
     print("="*70)
     print("🎰 CHECKPOINT COMPARISON - FINDING THE JACKPOT!")
     print("="*70)
 
-    weights_dir = Path("runs/plate_detection/yolov11_ultimate_v1/weights")
-    yaml_path = "dataset/plate_detection_augmented/plate_detection_augmented.yaml"
+    weights_dir = REPO_ROOT / "runs" / "plate_detection" / "yolov11_ultimate_v1" / "weights"
+    yaml_path = str(REPO_ROOT / "dataset" / "plate_detection_augmented" / "plate_detection_augmented.yaml")
 
     # Checkpoints to compare (select strategic epochs)
     checkpoints = [

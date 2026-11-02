@@ -11,6 +11,9 @@ from pathlib import Path
 import shutil
 from datetime import datetime
 
+REPO_ROOT = Path(__file__).resolve().parents[4]
+CANONICAL_DATA_YAML = REPO_ROOT / 'dataset' / 'plate_detection_augmented' / 'plate_detection_augmented.yaml'
+
 print("="*70)
 print("🎯 TRAINING: NATIVE MULTI-ORIENTATION MODEL")
 print("="*70)
@@ -27,7 +30,7 @@ print("\n" + "="*70 + "\n")
 
 CONFIG = {
     'model_base': 'yolo11n.pt',  # Start from pretrained
-    'data_yaml': 'dataset/plate_detection_augmented/plate_detection_augmented.yaml',
+    'data_yaml': str(CANONICAL_DATA_YAML),
     'project': 'runs/plate_detection',
     'name': 'yolov11_native_rotation_v2',
     
@@ -245,7 +248,7 @@ print(f"   mAP50-95: {metrics.box.map:.4f}")
 
 # Copy best model to root
 best_model_src = Path(CONFIG['project']) / CONFIG['name'] / 'weights' / 'best.pt'
-best_model_dst = Path('best_native_rotation.pt')
+best_model_dst = REPO_ROOT / 'best_native_rotation.pt'
 
 if best_model_src.exists():
     shutil.copy(best_model_src, best_model_dst)

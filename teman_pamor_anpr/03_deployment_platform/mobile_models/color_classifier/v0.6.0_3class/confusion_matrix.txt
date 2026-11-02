@@ -1,0 +1,6 @@
+val accuracy: 97.28%
+rows=true, cols=pred
+	white	black	yellow
+white	118	3	1	recall=96.7%
+black	2	207	0	recall=99.0%
+yellow	3	1	32	recall=88.9%

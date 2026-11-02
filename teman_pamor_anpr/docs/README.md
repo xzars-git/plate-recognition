@@ -19,12 +19,12 @@ New to the project? Start here:
 ### For Data Scientists
 
 - **[Color Classification Guide](guides/02_COLOR_CLASSIFICATION.md)** - Train color classifier
-- **Training Guide** (TODO) - Model training workflows
+- **[Training Guide](guides/TRAINING_GUIDE.md)** - Model training workflows
 - **Data Labeling Guide** (TODO) - Labeling best practices
 
 ### For ML Engineers
 
-- **Deployment Guide** (TODO) - TFLite conversion & validation
+- **[Deployment Guide](guides/DEPLOYMENT_GUIDE.md)** - Conversion, validation, packaging
 - **Model Optimization Guide** (TODO) - Quantization, pruning
 - **CI/CD Setup** (TODO) - Automation workflows
 
@@ -231,8 +231,8 @@ pip install torch torchvision --index-url https://download.pytorch.org/whl/cu118
 | [Getting Started](guides/01_GETTING_STARTED.md)              | Setup & first tasks    | ✅ Complete |
 | [Architecture ADR](architecture/01_ARCHITECTURE_DECISION.md) | Architecture decision  | ✅ Complete |
 | [Color Classification](guides/02_COLOR_CLASSIFICATION.md)    | Color classifier guide | ✅ Complete |
-| Training Guide                                               | Model training         | 📋 TODO     |
-| Deployment Guide                                             | TFLite deployment      | 📋 TODO     |
+| [Training Guide](guides/TRAINING_GUIDE.md)                   | Model training         | ✅ Complete |
+| [Deployment Guide](guides/DEPLOYMENT_GUIDE.md)               | Deployment workflow    | ✅ Complete |
 | API Documentation                                            | Model APIs             | 📋 TODO     |
 
 ---

@@ -8,6 +8,8 @@ from ultralytics import YOLO
 from pathlib import Path
 import torch
 
+REPO_ROOT = Path(__file__).resolve().parents[3]
+
 def main():
     print("="*70)
     print("🚀 QUICK TRAINING TEST - 500 EPOCHS")
@@ -21,7 +23,7 @@ def main():
         print(f"   Memory: {torch.cuda.get_device_properties(0).total_memory / 1024**3:.1f} GB")
     
     # Paths
-    dataset_yaml = "dataset/plate_detection_color/plate_color.yaml"
+    dataset_yaml = str(REPO_ROOT / "dataset" / "plate_detection_augmented" / "plate_detection_augmented.yaml")
     base_model = "yolo11n.pt"  # Lightweight model untuk quick test
     
     # Verify paths
