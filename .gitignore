@@ -145,3 +145,6 @@ coverage.xml
 
 # Bobot/log model hasil pelatihan lokal (besar; ringkasan angka ada di docs)
 /models/
+
+# Laporan bulanan (internal, tidak di-push)
+/laporan/
