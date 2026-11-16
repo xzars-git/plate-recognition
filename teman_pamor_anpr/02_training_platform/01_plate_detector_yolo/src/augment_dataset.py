@@ -10,6 +10,8 @@ from pathlib import Path
 from tqdm import tqdm
 import yaml
 
+REPO_ROOT = Path(__file__).resolve().parents[4]
+
 def rotate_image_and_label(image_path, label_path, output_img_dir, output_label_dir, angle):
     """
     Rotate image and adjust YOLO label coordinates
@@ -217,8 +219,8 @@ def augment_dataset(dataset_dir, output_dir, angles=[90, 180, 270]):
 
 if __name__ == "__main__":
     # Configuration
-    ORIGINAL_DATASET = "dataset/plate_detection_yolo"
-    AUGMENTED_DATASET = "dataset/plate_detection_augmented"
+    ORIGINAL_DATASET = str(REPO_ROOT / "dataset" / "plate_detection_yolo")
+    AUGMENTED_DATASET = str(REPO_ROOT / "dataset" / "plate_detection_augmented")
     ROTATION_ANGLES = [90, 180, 270]  # Tambahkan sudut rotasi yang diinginkan
     
     print("\n" + "🚀 STARTING DATA AUGMENTATION")

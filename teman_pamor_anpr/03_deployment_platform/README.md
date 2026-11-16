@@ -30,13 +30,15 @@ Training → Conversion → Validation → Staging → Production
 ## Usage
 
 ```bash
-# Convert to TFLite
-python conversion/to_tflite.py --model best.pt --output plate_detector.tflite
+# Baseline model improvement / retraining helper
+python conversion/enhance_model.py
 
-# Validate
-python validation/accuracy_test.py --model plate_detector.tflite
-python validation/latency_benchmark.py --model plate_detector.tflite
+# Quick runtime checks
+python inference/check_gpu.py
+python inference/quick_test.py
 
-# Deploy
-cp mobile_models/v1.0.0/*.tflite flutter_integration/assets/models/
+# Desktop demo app
+python inference/desktop_app.py
 ```
+
+> Note: dedicated scripts for TFLite conversion and validation are planned and tracked in docs/guides/DEPLOYMENT_GUIDE.md.

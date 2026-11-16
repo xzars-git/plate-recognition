@@ -1,11 +1,8 @@
-# Ganti path ini dengan path absolut ke folder dataset di komputer Anda
-# Gunakan garis miring '/'
-path: D:\Kerja\anpr-jabar\dataset
-
-# Direktori gambar (biarkan seperti ini)
+# Canonical dataset config for plate detector training
+# This file is kept in sync with dataset/plate_detection_augmented/plate_detection_augmented.yaml
+path: dataset/plate_detection_augmented
 train: images/train
 val: images/val
-
-# Info kelas (biarkan seperti ini)
 nc: 1
-names: ['plat_nomor']
+names:
+  0: license_plate

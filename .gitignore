@@ -30,7 +30,11 @@ env/
 .venv
 
 # PyTorch & Models
+*.pt
 *.pth
+*.ckpt
+*.onnx
+*.safetensors
 *.engine
 *.tflite
 *.pb
@@ -44,19 +48,11 @@ weights/
 *.weights
 checkpoints/
 
-# Dataset (Large files - will NOT be pushed to Git)
-# dataset/
-# dataset/*
-# dataset/**/*
+# Dataset (Large files - do NOT push raw/augmented data)
+dataset/
 
-# Image files (exclude all images)
-# *.jpg
-# *.jpeg
-# *.png
-# *.gif
-# *.bmp
-# *.tiff
-# *.webp
+# Image files are intentionally allowed outside `dataset/`
+# to avoid blocking app assets and documentation media.
 
 # Video files
 *.mp4
