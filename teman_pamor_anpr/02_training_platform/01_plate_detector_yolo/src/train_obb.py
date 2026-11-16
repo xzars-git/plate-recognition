@@ -16,9 +16,12 @@ if __name__ == "__main__":
     ap.add_argument("--data", default="dataset/plate_detection_obb/data.yaml")
     ap.add_argument("--model", default="yolo11n-obb.pt")
     ap.add_argument("--epochs", type=int, default=150)
-    ap.add_argument("--batch", type=int, default=16)
+    ap.add_argument("--batch", type=float, default=16,
+                    help="jumlah gambar per batch, atau pecahan VRAM 0-1 (mis. 0.75 = ~9 GB dari 12 GB)")
     ap.add_argument("--name", default="yolo11n_obb_tilt")
     a = ap.parse_args()
+    if a.batch >= 1:
+        a.batch = int(a.batch)
     print("GPU:", torch.cuda.get_device_name(0) if torch.cuda.is_available() else "TIDAK ADA (akan sangat lambat)")
 
     YOLO(a.model).train(
