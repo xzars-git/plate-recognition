@@ -41,6 +41,12 @@ plate-recognition/
 > Dataset, bobot model (`.pt`), dan `.tflite` tidak di-commit. Semua gambar di-ignore kecuali contoh
 > 50 gambar per model di `teman_pamor_anpr/02_training_platform/<model>/samples/`.
 
+### Dataset
+
+Dataset ada di Google Drive internal (folder `dataset_gdrive_plate_recognition`, minta akses ke tim).
+Isinya satu zip per dataset. Ekstrak semuanya di root repo; isi zip sudah diawali `dataset/`.
+Penjelasan tiap zip ada di `README.txt` dalam folder tersebut. Berisi plat nomor asli (data pribadi): jangan dibagikan publik.
+
 ---
 
 ## 🏗️ Architecture: Hybrid "Mobile-First MLOps"
