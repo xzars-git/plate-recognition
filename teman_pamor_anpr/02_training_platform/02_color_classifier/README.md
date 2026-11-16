@@ -34,7 +34,7 @@ python .../src/train.py --classes white,black,yellow,red --output models/color_c
 
 ```bash
 # 1. Siapkan dataset berlabel di dataset/plate_detection_color (tidak ada di git, minta salinan dari tim).
-#    Contoh 50 crop per warna ada di samples/.
+#    Contoh 1 crop per warna ada di samples/.
 
 # 2. Crop plat per warna -> dataset/plate_colors/{train,val}/<warna>/
 python teman_pamor_anpr/01_data_platform/labeling_tools/prepare_color_dataset.py

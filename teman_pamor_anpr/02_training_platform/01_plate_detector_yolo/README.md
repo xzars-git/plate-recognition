@@ -14,7 +14,7 @@ YOLO-based plate detector training module.
 
 - `dataset/plate_detection_augmented/plate_detection_augmented.yaml`
 
-Dataset dan bobot model tidak di-commit. Contoh 50 gambar + label YOLO ada di `samples/`
+Dataset dan bobot model tidak di-commit. Contoh 3 gambar + label YOLO ada di `samples/`
 (gambar diperkecil ke 1280 px; label ternormalisasi, jadi tetap valid).
 
 ## End-to-End Commands

@@ -31,7 +31,7 @@ Multi-model training with consistent structure
 ├── src/            # Training code
 ├── checkpoints/    # Model weights
 ├── notebooks/      # Analysis
-├── samples/        # 50 contoh gambar (satu-satunya gambar yang di-commit)
+├── samples/        # beberapa contoh gambar (satu-satunya gambar yang di-commit)
 └── README.md       # Model docs
 ```
 

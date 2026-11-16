@@ -51,7 +51,7 @@ checkpoints/
 # Dataset (Large files - do NOT push raw/augmented data)
 dataset/
 
-# Gambar diabaikan; hanya contoh 50 gambar per model di folder samples/ yang di-commit
+# Gambar diabaikan; hanya beberapa contoh gambar per model di folder samples/ yang di-commit
 *.jpg
 *.jpeg
 *.png

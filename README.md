@@ -38,14 +38,19 @@ plate-recognition/
 
 **Total model size:** ~10 MB tanpa anti-spoofing (target: <20MB for mobile)
 
-> Dataset, bobot model (`.pt`), dan `.tflite` tidak di-commit. Semua gambar di-ignore kecuali contoh
-> 50 gambar per model di `teman_pamor_anpr/02_training_platform/<model>/samples/`.
+> Dataset, bobot model (`.pt`), dan `.tflite` tidak di-commit. Semua gambar di-ignore kecuali beberapa
+> contoh gambar per model di `teman_pamor_anpr/02_training_platform/<model>/samples/`.
 
 ### Dataset
 
-Dataset ada di Google Drive internal (folder `dataset_gdrive_plate_recognition`, minta akses ke tim).
+Dataset ada di Kaggle sebagai dataset **private** (`plate-recognition-bapenda`, minta akses ke pemilik).
 Isinya satu zip per dataset. Ekstrak semuanya di root repo; isi zip sudah diawali `dataset/`.
-Penjelasan tiap zip ada di `README.txt` dalam folder tersebut. Berisi plat nomor asli (data pribadi): jangan dibagikan publik.
+Penjelasan tiap zip ada di `README.txt` dalam dataset tersebut. Berisi plat nomor asli (data pribadi): jangan dibagikan publik.
+
+```bash
+pip install kaggle   # token API: kaggle.com > Settings > API > Create New Token -> %USERPROFILE%\.kaggle\kaggle.json
+kaggle datasets download -d <username>/plate-recognition-bapenda -p dataset_kaggle --unzip
+```
 
 ---
 

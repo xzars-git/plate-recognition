@@ -41,5 +41,5 @@ Soal uji terkunci (`--eval-test`) hanya dijalankan sekali per versi besar.
 
 ## Data
 
-Dataset, bobot, dan `.tflite` tidak di-commit. Contoh 50 crop plat ada di `samples/`
+Dataset, bobot, dan `.tflite` tidak di-commit. Contoh 3 crop plat (satu per sumber) ada di `samples/`
 (nama berkas = `sumber_NOMOR_i.jpg`, sumber: jmto/kaggle/own).
