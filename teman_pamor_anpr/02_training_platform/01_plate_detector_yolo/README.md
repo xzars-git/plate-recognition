@@ -61,5 +61,11 @@ python teman_pamor_anpr/02_training_platform/01_plate_detector_yolo/src/train_ob
 python teman_pamor_anpr/02_training_platform/01_plate_detector_yolo/src/eval_tilt.py --model runs/plate_detection/yolo11n_obb_tilt/weights/best.pt
 ```
 
+**Bug label rotasi (diperbaiki 16 Nov 2026):** di `augment_dataset.py`, rumus label untuk 90° dan 270° tertukar.
+Gambar diputar searah jarum jam, tetapi labelnya dihitung untuk arah sebaliknya. Akibatnya **2.460 label `_rot90`/`_rot270`
+(sekitar separuh dataset) kotaknya tidak berada di plat**, dan epoch170 dilatih dengan label tersebut. Skrip sudah diperbaiki,
+label dataset lokal dikoreksi dengan `(cx, cy) → (1-cx, 1-cy)` (cadangan di `labels_backup_rotbug/`), dan 19 label di
+`samples/` juga sudah dikoreksi. Model yang dilatih ulang dari dataset ini diharapkan membaik juga pada sudut 0°.
+
 Catatan: trik rotasi mengandaikan plat asli kurang lebih tegak. Tepi kanvas diisi `BORDER_REPLICATE`
 (tidak memakai refleksi, karena refleksi memunculkan salinan plat yang tidak berlabel).

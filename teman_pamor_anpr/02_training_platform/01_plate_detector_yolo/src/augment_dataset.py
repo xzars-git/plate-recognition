@@ -68,9 +68,9 @@ def rotate_image_and_label(image_path, label_path, output_img_dir, output_label_
                 
                 # Transform coordinates based on rotation
                 if angle == 90:
-                    # 90° clockwise: (x,y) -> (y, 1-x)
-                    new_x = y_center
-                    new_y = 1 - x_center
+                    # 90° clockwise: (x,y) -> (1-y, x)
+                    new_x = 1 - y_center
+                    new_y = x_center
                     new_w = bbox_h
                     new_h = bbox_w
                 elif angle == 180:
@@ -80,9 +80,9 @@ def rotate_image_and_label(image_path, label_path, output_img_dir, output_label_
                     new_w = bbox_w
                     new_h = bbox_h
                 elif angle == 270:
-                    # 270° clockwise (90° counter-clockwise): (x,y) -> (1-y, x)
-                    new_x = 1 - y_center
-                    new_y = x_center
+                    # 270° clockwise (90° counter-clockwise): (x,y) -> (y, 1-x)
+                    new_x = y_center
+                    new_y = 1 - x_center
                     new_w = bbox_h
                     new_h = bbox_w
                 
