@@ -4,17 +4,16 @@ Klasifikasi warna plat nomor (MobileNetV2 α=0.35, 96×96) -> export `.tflite`.
 
 ## Status
 
-v0.2.0 (staging), dua varian di `03_deployment_platform/mobile_models/color_classifier/`:
+v0.6.0 (staging), varian di `03_deployment_platform/mobile_models/color_classifier/` (hanya label + confusion matrix; `.tflite` tidak di-commit):
 
 | Varian | Kelas | Akurasi val | Catatan |
 |---|---|---|---|
-| `v0.2.0_3class` | white, black, yellow | 97,18% (n=355) | Aman dipakai. |
-| `v0.2.0_4class` | white, black, yellow, **red** | 97,51% (n=361) | Merah: lihat di bawah. |
+| `v0.6.0_4class` | white, black, yellow, **red** | 96,95% (n=394) | Rekomendasi. Recall: white 97,5%, black 98,6%, yellow 91,7%, red 88,5%. |
+| `v0.6.0_3class` | white, black, yellow | - | Tanpa kelas merah. |
 
-**Keterbatasan merah:** plat merah asli hanya 12 sampel di seluruh data. Training merah = 400 sintetis
-(plat hitam diubah jadi latar merah) + 6 asli; uji pada 6 plat merah asli sisanya -> recall 4/6, dan tidak ada
-plat non-merah yang salah diprediksi merah. Plat merah gelap/maroon (malam hari) sering terbaca `black`.
-Untuk menaikkan recall merah dibutuhkan foto plat merah asli dari lapangan (target 50+).
+v0.6.0 dilatih dengan augmentasi padding acak dan "foto malam" dari plat merah asli, jadi tahan crop longgar
+(padding ~0.15: 95,9% vs 75,3% model lama). **Keterbatasan merah:** plat merah gelap/maroon (malam hari) masih
+kadang terbaca `black` (data sendiri 4-5/7). Untuk menaikkan recall merah dibutuhkan lebih banyak foto plat merah asli.
 
 Detail: `00_platform/model_registry/registry.json`.
 
@@ -34,8 +33,8 @@ python .../src/train.py --classes white,black,yellow,red --output models/color_c
 ## Train -> Export (jalankan dari root repo)
 
 ```bash
-# 1. Pulihkan dataset berlabel (sekali saja; dataset/ di-gitignore)
-git archive 42821f7^ dataset/plate_detection_color | tar -x
+# 1. Siapkan dataset berlabel di dataset/plate_detection_color (tidak ada di git, minta salinan dari tim).
+#    Contoh 50 crop per warna ada di samples/.
 
 # 2. Crop plat per warna -> dataset/plate_colors/{train,val}/<warna>/
 python teman_pamor_anpr/01_data_platform/labeling_tools/prepare_color_dataset.py

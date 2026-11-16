@@ -351,7 +351,7 @@ plate-recognition/
 2. ✅ Train color classifier
 3. ✅ Convert to TFLite
 4. 🔄 Integrate ke mobile app (Flutter)
-5. 🔄 Add OCR (PaddleOCR/Tesseract)
+5. ✅ Add OCR (OCR kustom CNN + CTC, lihat [OCR_CUSTOM_BLUEPRINT.md](../OCR_CUSTOM_BLUEPRINT.md))
 6. 🔄 Deploy to production
 
 ## Support

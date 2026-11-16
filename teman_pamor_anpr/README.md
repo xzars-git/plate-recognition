@@ -21,8 +21,8 @@ teman_pamor_anpr/
 ## 🎯 4 AI Models
 
 1. **Plate Detector** (YOLOv11) - ✅ Production (81.6% mAP)
-2. **Color Classifier** (MobileNetV2) - 🔄 Development
-3. **OCR Custom** (CRNN) - 📋 Backlog
+2. **Color Classifier** (MobileNetV2) - 🔄 Staging (96,95%)
+3. **OCR Custom** (CNN + CTC) - 🔄 Staging (76,3% benar persis)
 4. **Anti-Spoofing** (Binary) - 📋 Backlog
 
 ## 🚀 Quick Start
@@ -49,6 +49,7 @@ python 03_deployment_platform/inference/quick_test.py --image test.jpg
 ## 📚 Documentation
 
 - [Architecture Decision](docs/architecture/01_ARCHITECTURE_DECISION.md) - Why this structure?
+- [OCR Custom Blueprint](docs/OCR_CUSTOM_BLUEPRINT.md) - Keputusan, data, dan hasil OCR kustom
 - [Color Classification Guide](docs/guides/02_COLOR_CLASSIFICATION.md) - Step-by-step
 - [Training Guide](docs/guides/TRAINING_GUIDE.md) - Model training
 - [Deployment Guide](docs/guides/DEPLOYMENT_GUIDE.md) - Mobile deployment
@@ -58,8 +59,8 @@ python 03_deployment_platform/inference/quick_test.py --image test.jpg
 | Component | Status | Progress |
 |-----------|--------|----------|
 | Plate Detector | ✅ Production | 81.6% mAP (10K images) |
-| Color Classifier | 🔄 Training | Dataset ready (55 images) |
-| OCR Custom | 📋 Planned | Dataset acquired |
+| Color Classifier | 🔄 Staging | v0.6.0, 4 kelas, 96,95% val |
+| OCR Custom | 🔄 Staging | v2, 76,3% benar persis (ML Kit 40,1%) |
 | Anti-Spoofing | 📋 Planned | Design phase |
 
 ## 🏆 Production Metrics

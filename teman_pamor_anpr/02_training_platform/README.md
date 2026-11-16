@@ -11,12 +11,12 @@ Multi-model training with consistent structure
 
 ### 2. Color Classifier (`02_color_classifier/`)
 - Architecture: MobileNetV2
-- Status: 🔄 Development
+- Status: 🔄 Staging (v0.6.0, 96,95% val)
 - Classes: 4 (White, Black, Red, Yellow)
 
 ### 3. OCR Custom (`03_ocr_custom/`)
-- Architecture: CRNN
-- Status: 📋 Backlog
+- Architecture: CNN penuh-konvolusi + CTC
+- Status: 🔄 Staging (v2, 76,3% benar persis)
 
 ### 4. Anti-Spoofing (`04_anti_spoofing/`)
 - Architecture: Binary Classifier
@@ -31,6 +31,7 @@ Multi-model training with consistent structure
 ├── src/            # Training code
 ├── checkpoints/    # Model weights
 ├── notebooks/      # Analysis
+├── samples/        # 50 contoh gambar (satu-satunya gambar yang di-commit)
 └── README.md       # Model docs
 ```
 

@@ -34,17 +34,18 @@
       "notes": "v0.6.0_4class (rekomendasi) dan v0.6.0_3class. Augmentasi padding acak + 'foto malam' dari merah asli. Tahan crop longgar (padding ~0.15 seperti app): acc 95.9% dengan padding vs 75.3% model lama. Val n=394: merah 23/26 (merah gelap data sendiri 4-5/7), kuning 33/36. Input RGB float32 0-255; crop boleh dengan padding hingga ~0.15."
     },
     "ocr_custom": {
-      "version": "0.0.1",
-      "architecture": "CRNN",
+      "version": "0.2.0",
+      "architecture": "CNN penuh-konvolusi + CTC",
       "input_size": [
-        128,
-        32
+        48,
+        192
       ],
-      "accuracy": 0.0,
-      "latency_ms": 30,
-      "size_mb": 5.0,
-      "trained_date": "pending",
-      "status": "backlog"
+      "accuracy": 0.763,
+      "latency_ms": null,
+      "size_mb": 2.28,
+      "trained_date": "2026-11-02",
+      "status": "staging",
+      "notes": "v2, fp16 TFLite. Benar persis 76.3% pada 494 plat uji terkunci (ML Kit terbaik 40.1%). Latensi HP kelas bawah belum diukur. Lihat docs/OCR_CUSTOM_BLUEPRINT.md."
     },
     "anti_spoofing": {
       "version": "0.0.1",

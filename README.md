@@ -32,11 +32,14 @@ plate-recognition/
 | Model                   | Architecture | Status         | Accuracy  | Latency | Size   |
 | ----------------------- | ------------ | -------------- | --------- | ------- | ------ |
 | **1. Plate Detector**   | YOLOv11n     | ✅ Production  | 81.6% mAP | 50ms    | 6.2 MB |
-| **2. Color Classifier** | MobileNetV2  | 🔄 Development | -         | 15ms    | 2.0 MB |
-| **3. OCR Custom**       | CRNN         | 📋 Backlog     | -         | 50ms    | 8.0 MB |
+| **2. Color Classifier** | MobileNetV2  | 🔄 Staging     | 96,95% acc | 15ms   | 1.9 MB |
+| **3. OCR Custom**       | CNN + CTC    | 🔄 Staging     | 76,3% benar persis | belum diukur | 2.28 MB |
 | **4. Anti-Spoofing**    | Binary CNN   | 📋 Backlog     | -         | 30ms    | 3.0 MB |
 
-**Total model size:** ~19 MB (target: <20MB for mobile)
+**Total model size:** ~10 MB tanpa anti-spoofing (target: <20MB for mobile)
+
+> Dataset, bobot model (`.pt`), dan `.tflite` tidak di-commit. Semua gambar di-ignore kecuali contoh
+> 50 gambar per model di `teman_pamor_anpr/02_training_platform/<model>/samples/`.
 
 ---
 
@@ -128,25 +131,28 @@ python src/train.py
 
 **Location:** `teman_pamor_anpr/02_training_platform/01_plate_detector_yolo/`
 
-### Model 2: Color Classifier (MobileNetV2) 🔄 DEVELOPMENT
+### Model 2: Color Classifier (MobileNetV2) 🔄 STAGING
 
-| Metric       | Value  | Notes                     |
-| ------------ | ------ | ------------------------- |
-| **Accuracy** | TBD    | Training in progress      |
-| **Latency**  | <15ms  | Target                    |
-| **Size**     | 2.0 MB | MobileNetV2 α=0.35        |
-| **Status**   | 🔄 Dev | Dataset ready (3 classes) |
+| Metric       | Value      | Notes                                   |
+| ------------ | ---------- | --------------------------------------- |
+| **Accuracy** | 96,95%     | v0.6.0_4class, val n=394                 |
+| **Latency**  | <15ms      | Target                                  |
+| **Size**     | 1.92 MB    | MobileNetV2 α=0.35, TFLite              |
+| **Status**   | 🔄 Staging | 4 kelas (white, black, yellow, red)     |
 
 **Location:** `teman_pamor_anpr/02_training_platform/02_color_classifier/`
 
-### Model 3: OCR Custom (CRNN) 📋 BACKLOG
+### Model 3: OCR Custom (CNN + CTC) 🔄 STAGING
 
-| Metric            | Value      | Notes             |
-| ----------------- | ---------- | ----------------- |
-| **Char Accuracy** | TBD        | Target >95%       |
-| **Latency**       | <50ms      | Target            |
-| **Size**          | 8.0 MB     | CRNN architecture |
-| **Status**        | 📋 Backlog | Dataset available |
+| Metric            | Value      | Notes                                              |
+| ----------------- | ---------- | -------------------------------------------------- |
+| **Benar persis**  | 76,3%      | 494 plat uji terkunci; ML Kit terbaik 40,1%        |
+| **Salah/karakter**| 6,3%       |                                                    |
+| **Latency**       | <50ms      | Target; belum diukur di HP kelas bawah             |
+| **Size**          | 2.28 MB    | TFLite fp16, paritas 100% dengan PyTorch           |
+| **Status**        | 🔄 Staging | Gerbang 1-2 lulus; menggantikan ML Kit (tanpa cadangan) |
+
+**Blueprint & keputusan:** `teman_pamor_anpr/docs/OCR_CUSTOM_BLUEPRINT.md`
 
 **Location:** `teman_pamor_anpr/02_training_platform/03_ocr_custom/`
 
@@ -191,19 +197,21 @@ python src/train.py
 - ✅ Documentation (ADR + guides)
 - ✅ Plate detector in production (81.6% mAP)
 
-### 🔄 Phase 2: Color Classifier (IN PROGRESS)
+### 🔄 Phase 2: Color Classifier (STAGING)
 
-- ✅ Dataset prepared (3 classes)
-- 🔄 Training MobileNetV2
-- ⏳ TFLite conversion
+- ✅ Dataset prepared (4 classes, termasuk merah)
+- ✅ Training MobileNetV2 (v0.6.0, 96,95%)
+- ✅ TFLite conversion + validation gate
 - ⏳ Mobile validation
 
-### 📋 Phase 3: OCR Custom (BACKLOG)
+### 🔄 Phase 3: OCR Custom (STAGING)
 
-- ✅ Dataset available
-- ⏳ CRNN architecture implementation
-- ⏳ CTC loss training
-- ⏳ Handle O/0 confusion
+- ✅ Korpus + soal uji terkunci + pembanding ML Kit
+- ✅ Pembangkit plat sintetis
+- ✅ Training CNN + CTC (v2: 76,3% benar persis)
+- ✅ TFLite export fp16 (paritas 100%)
+- ⏳ Ukur kecepatan di HP kelas bawah
+- ⏳ Tes lapangan di aplikasi
 
 ### 📋 Phase 4: Anti-Spoofing (BACKLOG)
 
@@ -605,7 +613,7 @@ License plate recognition system for Bapenda (Regional Revenue Agency) to track 
 
 - Detection: YOLOv11n (Ultralytics)
 - Rotation: Custom edge detection algorithm
-- OCR: ML Kit (mobile) / PaddleOCR (server)
+- OCR: OCR kustom CNN + CTC (TFLite, mobile)
 - Backend: Flutter mobile app
 - GPU: NVIDIA RTX 3080 Ti
 

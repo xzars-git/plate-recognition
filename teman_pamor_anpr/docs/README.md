@@ -63,7 +63,8 @@ Each component has its own README:
 - **[02_training_platform/README.md](../02_training_platform/README.md)** - Model training
   - **[Plate Detector](../02_training_platform/01_plate_detector_yolo/README.md)** - YOLOv11n
   - **[Color Classifier](../02_training_platform/02_color_classifier/README.md)** - MobileNetV2
-  - **[OCR Custom](../02_training_platform/03_ocr_custom/README.md)** - CRNN
+  - **[OCR Custom](../02_training_platform/03_ocr_custom/README.md)** - CNN + CTC
+  - **[OCR Custom Blueprint](OCR_CUSTOM_BLUEPRINT.md)** - Keputusan & hasil OCR kustom
   - **[Anti-Spoofing](../02_training_platform/04_anti_spoofing/README.md)** - Binary CNN
 
 ### Deployment Platform
@@ -106,8 +107,8 @@ Each component has its own README:
 | Model            | Accuracy  | Latency (Mobile) | Size   | Status         |
 | ---------------- | --------- | ---------------- | ------ | -------------- |
 | Plate Detector   | 81.6% mAP | 50ms             | 6.2 MB | ✅ Production  |
-| Color Classifier | TBD       | <15ms            | 2.0 MB | 🔄 Development |
-| OCR Custom       | TBD       | <50ms            | 8.0 MB | 📋 Backlog     |
+| Color Classifier | 96,95%    | <15ms            | 1.9 MB | 🔄 Staging     |
+| OCR Custom       | 76,3% benar persis | belum diukur | 2.28 MB | 🔄 Staging |
 | Anti-Spoofing    | TBD       | <30ms            | 3.0 MB | 📋 Backlog     |
 
 ### System Performance
