@@ -7,7 +7,7 @@ Auto-crop plates dari labeled images dan organize by color
 from PIL import Image
 from pathlib import Path
 import json
-import shutil
+import zlib
 from tqdm import tqdm
 
 def prepare_color_dataset(
@@ -134,7 +134,8 @@ def prepare_color_dataset(
             crop_w = x2 - x1
             crop_h = y2 - y1
             
-            if crop_w < min_size or crop_h < min_size:
+            # plat lebar (~4:1), jadi tinggi cukup 1/3 dari min_size
+            if crop_w < min_size or crop_h < min_size // 3:
                 stats['skipped'] += 1
                 continue
             
@@ -153,7 +154,7 @@ def prepare_color_dataset(
                 
                 # Save to color folder
                 # 80% train, 20% val (based on file name hash)
-                split = 'train' if hash(img_path.stem) % 5 != 0 else 'val'
+                split = 'train' if zlib.crc32(img_path.stem.encode()) % 5 != 0 else 'val'
                 
                 output_file = output_path / split / color / f"{img_path.stem}_{idx}.jpg"
                 plate_resized.save(output_file, quality=95)

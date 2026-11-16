@@ -51,8 +51,13 @@ checkpoints/
 # Dataset (Large files - do NOT push raw/augmented data)
 dataset/
 
-# Image files are intentionally allowed outside `dataset/`
-# to avoid blocking app assets and documentation media.
+# Gambar diabaikan; hanya contoh 50 gambar per model di folder samples/ yang di-commit
+*.jpg
+*.jpeg
+*.png
+*.bmp
+*.webp
+!**/samples/**
 
 # Video files
 *.mp4
@@ -137,3 +142,6 @@ coverage.xml
 *.cover
 .hypothesis/
 .pytest_cache/
+
+# Bobot/log model hasil pelatihan lokal (besar; ringkasan angka ada di docs)
+/models/

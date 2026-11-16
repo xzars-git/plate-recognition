@@ -14,17 +14,24 @@
       "status": "production"
     },
     "color_classifier": {
-      "version": "0.1.0",
-      "architecture": "MobileNetV2",
+      "version": "0.6.0",
+      "architecture": "MobileNetV2 (alpha=0.35)",
       "input_size": [
         96,
         96
       ],
-      "accuracy": 0.0,
+      "accuracy": 0.972,
       "latency_ms": 15,
-      "size_mb": 2.0,
-      "trained_date": "pending",
-      "status": "development"
+      "size_mb": 1.92,
+      "trained_date": "2026-10-29",
+      "status": "staging",
+      "classes": [
+        "white",
+        "black",
+        "yellow",
+        "red"
+      ],
+      "notes": "v0.6.0_4class (rekomendasi) dan v0.6.0_3class. Augmentasi padding acak + 'foto malam' dari merah asli. Tahan crop longgar (padding ~0.15 seperti app): acc 95.9% dengan padding vs 75.3% model lama. Val n=394: merah 23/26 (merah gelap data sendiri 4-5/7), kuning 33/36. Input RGB float32 0-255; crop boleh dengan padding hingga ~0.15."
     },
     "ocr_custom": {
       "version": "0.0.1",
